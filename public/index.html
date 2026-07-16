@@ -807,12 +807,24 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     if(m && m.override) state.local.override = m.override;
 
     const b = await load(KEY_BRIEF);
-    if(b && b.date === dateISO){
-      state.macro = b.macro; state.pulse = b.pulse||[]; state.firms = b.firms||{};
-      if(b.local) state.local = Object.assign(state.local, b.local, {status:b.local.items?.length?"done":"idle"});
-      renderPulse();
-    }
-    render();
+
+// Always display the most recently saved brief.
+// It stays visible until the server provides a newer one.
+if (b) {
+  state.macro = b.macro || null;
+  state.pulse = b.pulse || b.macro?.pulse || [];
+  state.firms = b.firms || {};
+
+  if (b.local) {
+    state.local = Object.assign(state.local, b.local, {
+      status: b.local.items?.length ? "done" : "idle"
+    });
+  }
+
+  renderPulse();
+}
+
+render();
   })();
 })();
 </script>
@@ -921,8 +933,10 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
       const res = await fetch("/api/brief/" + id);
       if(!res.ok) return;
       const brief = await res.json();
-      if(brief.date === new Date().toISOString().slice(0,10) && window.__creLoad) window.__creLoad(brief);
-    }catch(e){}
+
+if (window.__creLoad) {
+  window.__creLoad(brief);
+}catch(e){}
   });
 })();
 </script>
