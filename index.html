@@ -774,7 +774,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     setTimeout(()=>$("copy").textContent = "Copy", 1400);
   };
 
-  $("pull").onclick = run;
+  $("pull").style.display = "none";
 
   /* ── bridge to the push layer ─────────────── */
   // Lets the subscribe call send your real watchlist + market to the cron,
