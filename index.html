@@ -558,9 +558,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
       col.innerHTML = `<div class="empty">
         <h3>The stack is empty</h3>
         <p>Pull today's brief to fill it: macro conditions at the base, your named firms on the floors above.</p>
-        <button class="btn" id="pull2">Pull brief</button>
       </div>` + watchHTML();
-      $("pull2").onclick = run;
       wireWatch(); renderRail(); return;
     }
 
@@ -720,7 +718,6 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     state.running = true;
     state.macroErr = null; state.macro = null; state.firms = {};
     state.local.items = []; state.local.fundamentals = [];
-    $("pull").disabled = true; $("pull").textContent = "Pulling…";
     render();
 
     // Ground first: re-check location, then macro, then the floors above.
@@ -742,7 +739,6 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     await Promise.all([worker(),worker(),localJob]);
 
     state.running = false;
-    $("pull").disabled = false; $("pull").textContent = "Refresh brief";
     await save(KEY_BRIEF,{date:dateISO,macro:state.macro,pulse:state.pulse,firms:state.firms,local:state.local});
   }
 
@@ -778,7 +774,6 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     setTimeout(()=>$("copy").textContent = "Copy", 1400);
   };
 
-  $("pull").style.display = "none";
 
   /* ── bridge to the push layer ─────────────── */
   // Lets the subscribe call send your real watchlist + market to the cron,
@@ -790,7 +785,6 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     state.firms = brief.firms || {};
     if(brief.local) Object.assign(state.local, brief.local,
       { status: brief.local.items?.length ? "done" : "idle" });
-    $("pull").textContent = "Refresh brief";
     renderPulse(); render();
   };
 
@@ -805,7 +799,6 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     if(b && b.date === dateISO){
       state.macro = b.macro; state.pulse = b.pulse||[]; state.firms = b.firms||{};
       if(b.local) state.local = Object.assign(state.local, b.local, {status:b.local.items?.length?"done":"idle"});
-      $("pull").textContent = "Refresh brief";
       renderPulse();
     }
     render();
