@@ -189,6 +189,6 @@ app.post("/api/ask", async (req, res) => {
 });
 
 // Fire the daily job by hand — useful for testing the push path.
-app.post("/api/test-push", async (_req, res) => { runDaily(); res.json({ ok: true, note: "Running now; watch the logs." }); });
+// app.post("/api/test-push", async (_req, res) => { runDaily(); res.json({ ok: true, note: "Running now; watch the logs." }); });
 
 app.listen(PORT, () => console.log(`CRE brief server on :${PORT}`));
