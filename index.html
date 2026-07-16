@@ -554,14 +554,16 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
   function render(){
     const col = $("col");
 
-    if(!state.macro && !Object.keys(state.firms).length && !state.running){
-      col.innerHTML = `<div class="empty">
-        <h3>The stack is empty</h3>
-        <p>Pull today's brief to fill it: macro conditions at the base, your named firms on the floors above.</p>
-      </div>` + watchHTML();
-      wireWatch(); renderRail(); return;
-    }
+    if(!state.macro && !Object.keys(state.firms).length){
+  col.innerHTML = `<div class="empty">
+    <h3>Today’s brief is not ready yet</h3>
+    <p>The brief updates automatically at 8:00 AM ET each weekday.</p>
+  </div>` + watchHTML();
 
+  wireWatch();
+  renderRail();
+  return;
+}
     let html = localHTML();
     html += `<div class="sect-rule"><h2>Macro</h2><span>${MACRO_SECTIONS.length} sections</span></div>`;
 
