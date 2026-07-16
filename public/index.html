@@ -1039,17 +1039,28 @@ if (supported) {
 
   // If the cron already built today's brief, show that instead of re-searching.
   window.addEventListener("load", async () => {
-    const id = localStorage.getItem(KEY_SUB);
-    if(!id) return;
-    try{
-      const res = await fetch("/api/brief/" + id);
-      if(!res.ok) return;
-      const brief = await res.json();
+  const id = localStorage.getItem(KEY_SUB);
 
-if (window.__creLoad) {
-  window.__creLoad(brief);
-}catch(e){}
-  });
+  if (!id) {
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/brief/" + id);
+
+    if (!res.ok) {
+      return;
+    }
+
+    const brief = await res.json();
+
+    if (window.__creLoad) {
+      await window.__creLoad(brief);
+    }
+  } catch (error) {
+    console.error("Could not load stored brief:", error);
+  }
+});
 })();
 </script>
 </body>
