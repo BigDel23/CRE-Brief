@@ -299,80 +299,234 @@ background-attachment:fixed;
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important}
   }
-  /* ── Module depth and modern terminal effects ─────────── */
+  /* ─────────────────────────────────────────────
+   BLOOMBERG TERMINAL — MODERN POLISH
+   Paste directly above the closing </style>
+───────────────────────────────────────────── */
 
+/* Core modules */
 .titleblock,
 .card,
 .empty,
 .tower {
-  background: rgba(10, 38, 56, 0.9);
-  border-color: rgba(92, 151, 184, 0.6);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14, 48, 69, 0.94),
+      rgba(7, 29, 43, 0.92)
+    );
+
+  border: 1px solid rgba(103, 167, 202, 0.48);
+
   box-shadow:
-    0 16px 38px rgba(0, 0, 0, 0.34),
-    0 2px 8px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.035);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+    0 22px 55px rgba(0, 0, 0, 0.42),
+    0 6px 16px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+
+  backdrop-filter: blur(14px) saturate(115%);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
 }
 
+/* Restrained modern corners */
 .titleblock,
 .card,
 .empty {
-  border-radius: 7px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
 .tower {
-  border-radius: 5px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
-/* Slightly brighter module headers */
+/* Stronger top terminal bar */
+.titleblock {
+  position: relative;
+
+  box-shadow:
+    0 28px 65px rgba(0, 0, 0, 0.48),
+    0 8px 20px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Fine amber line under top bar */
+.titleblock::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 0;
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(242, 180, 65, 0.7),
+      transparent
+    );
+}
+
+/* Market cells */
+.tb-cell {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.018),
+      rgba(255, 255, 255, 0)
+    );
+
+  transition:
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.tb-cell:hover {
+  background: rgba(255, 255, 255, 0.035);
+
+  box-shadow:
+    inset 0 -2px 0 rgba(242, 180, 65, 0.35);
+}
+
+.tb-value {
+  color: #f5f9fc;
+  text-shadow: 0 0 18px rgba(134, 196, 228, 0.12);
+}
+
+/* Empty-state hero module */
+.empty {
+  position: relative;
+  padding: 44px 28px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(14, 51, 73, 0.93),
+      rgba(8, 34, 51, 0.91)
+    );
+
+  box-shadow:
+    0 26px 65px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.empty::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.035) 45%,
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+.empty h3 {
+  position: relative;
+  letter-spacing: 0.14em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.empty p {
+  position: relative;
+}
+
+/* Story and data cards */
+.card {
+  position: relative;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(242, 180, 65, 0.85),
+      rgba(42, 92, 122, 0.15)
+    );
+
+  opacity: 0.55;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+
+  border-color: rgba(132, 196, 228, 0.78);
+
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.48),
+    0 8px 20px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Card headers */
 .card-head {
   background:
     linear-gradient(
       180deg,
-      rgba(27, 77, 105, 0.96),
-      rgba(17, 57, 80, 0.96)
+      rgba(26, 78, 107, 0.96),
+      rgba(15, 54, 78, 0.96)
     );
+
+  padding: 12px 14px;
+
   box-shadow:
     inset 0 -1px 0 rgba(255, 255, 255, 0.035),
-    0 5px 14px rgba(0, 0, 0, 0.14);
+    0 7px 18px rgba(0, 0, 0, 0.18);
 }
 
-/* Top terminal bar */
-.titleblock {
-  box-shadow:
-    0 18px 42px rgba(0, 0, 0, 0.38),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+.card-head h3 {
+  color: #f2f7fa;
+  letter-spacing: 0.11em;
 }
 
-/* Empty-state panel */
-.empty {
-  background: rgba(11, 44, 65, 0.88);
-  box-shadow:
-    0 18px 42px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.035);
-}
+/* Individual news rows */
+.item {
+  padding: 15px 16px;
 
-/* Cards lift subtly on hover */
-.card {
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    border-color 0.18s ease;
+    background-color 0.16s ease,
+    padding-left 0.16s ease;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(130, 190, 220, 0.85);
+.item:hover {
+  background: rgba(255, 255, 255, 0.025);
+  padding-left: 19px;
+}
+
+.item h4 {
+  color: #f2f7fa;
+  line-height: 1.4;
+}
+
+.item p {
+  color: #9db9c9;
+}
+
+/* Watchlist tower */
+.tower {
   box-shadow:
-    0 22px 48px rgba(0, 0, 0, 0.4),
-    0 4px 12px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 24px 55px rgba(0, 0, 0, 0.42),
+    0 6px 16px rgba(0, 0, 0, 0.24);
 }
 
-/* Rail floors feel more interactive */
 .floor {
   transition:
     transform 0.16s ease,
@@ -381,53 +535,148 @@ background-attachment:fixed;
 }
 
 .floor:hover {
-  transform: translateX(3px);
+  transform: translateX(4px);
 }
 
-/* Buttons gain depth without losing the terminal look */
+.floor-band {
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease,
+    padding-left 0.16s ease;
+}
+
+.floor:hover .floor-band {
+  padding-left: 12px;
+}
+
+/* Buttons */
 .btn,
-.btn-ghost {
+.btn-ghost,
+.drop {
   border-radius: 4px;
+
   transition:
     transform 0.14s ease,
     box-shadow 0.14s ease,
     filter 0.14s ease,
-    border-color 0.14s ease;
+    color 0.14s ease,
+    border-color 0.14s ease,
+    background-color 0.14s ease;
 }
 
 .btn {
   box-shadow:
-    0 7px 18px rgba(0, 0, 0, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 9px 22px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+
   box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 14px 30px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-ghost {
+  background: rgba(4, 20, 31, 0.24);
 }
 
 .btn-ghost:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+
+  background: rgba(255, 255, 255, 0.035);
+
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.24);
 }
 
-/* Inputs feel inset like terminal controls */
+/* Inputs */
 .locbar input,
 .add input {
+  background: rgba(5, 25, 38, 0.82);
+
+  border-color: rgba(92, 151, 184, 0.5);
+
   box-shadow:
-    inset 0 2px 8px rgba(0, 0, 0, 0.28),
+    inset 0 3px 10px rgba(0, 0, 0, 0.34),
     0 1px 0 rgba(255, 255, 255, 0.025);
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background-color 0.16s ease;
 }
 
-/* Keep motion restrained on touch devices */
+.locbar input:focus,
+.add input:focus {
+  background: rgba(7, 31, 46, 0.94);
+
+  border-color: rgba(242, 180, 65, 0.75);
+
+  box-shadow:
+    inset 0 3px 10px rgba(0, 0, 0, 0.28),
+    0 0 0 2px rgba(242, 180, 65, 0.12),
+    0 0 24px rgba(242, 180, 65, 0.08);
+}
+
+/* Section headings */
+.sect-rule {
+  border-bottom-color: rgba(104, 167, 201, 0.42);
+}
+
+.sect-rule h2 {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.38);
+}
+
+/* Active notification state */
+.btn-ghost.armed {
+  background: rgba(242, 180, 65, 0.08);
+
+  box-shadow:
+    0 0 0 1px rgba(242, 180, 65, 0.1),
+    0 0 22px rgba(242, 180, 65, 0.1);
+}
+
+/* Scrollbar */
+#cre-root {
+  scrollbar-color: rgba(92, 151, 184, 0.65) rgba(4, 20, 31, 0.5);
+}
+
+#cre-root ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+#cre-root ::-webkit-scrollbar-track {
+  background: rgba(4, 20, 31, 0.5);
+}
+
+#cre-root ::-webkit-scrollbar-thumb {
+  background: rgba(92, 151, 184, 0.55);
+  border: 2px solid rgba(4, 20, 31, 0.8);
+  border-radius: 10px;
+}
+
+#cre-root ::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 184, 216, 0.72);
+}
+
+/* Do not apply hover movement on touch screens */
 @media (hover: none) {
   .card:hover,
   .floor:hover,
   .btn:hover,
   .btn-ghost:hover {
     transform: none;
+  }
+
+  .item:hover {
+    padding-left: 16px;
   }
 }
 </style>
