@@ -1,9 +1,31 @@
 // Service worker: this is what stays alive after you close the app.
-const CACHE = "cre-brief-v1";
+const CACHE = "cre-brief-v2";
 const SHELL = ["/", "/index.html", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
-self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+self.addEventListener("fetch", e => {
+  if (e.request.method !== "GET" || e.request.url.includes("/api/")) return;
+
+  if (e.request.mode === "navigate") {
+    e.respondWith(
+      fetch(e.request)
+        .then(response => {
+          const copy = response.clone();
+
+          caches.open(CACHE).then(cache => {
+            cache.put("/", copy);
+          });
+
+          return response;
+        })
+        .catch(() => caches.match("/") || caches.match("/index.html"))
+    );
+
+    return;
+  }
+
+  e.respondWith(
+    caches.match(e.request).then(hit => hit || fetch(e.request))
+  );
 });
 
 self.addEventListener("activate", e => {
