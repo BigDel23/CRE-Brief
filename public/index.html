@@ -312,7 +312,11 @@
       <div class="tb-cell"><span class="tb-label">CMBS spreads</span><div class="tb-value" id="p2">—</div><div class="tb-note" id="p2n"></div></div>
       <div class="tb-cell"><span class="tb-label">Cap rates</span><div class="tb-value" id="p3">—</div><div class="tb-note" id="p3n"></div></div>
       <div class="tb-actions">
-        <button class="btn" id="pull">Pull brief</button>
+        <div class="brief-status">
+          <strong>Today’s Brief</strong>
+          <span>Updates automatically at 8:00 AM ET</span>
+        </div>
+        
         <button class="btn-ghost" id="notify">Notify</button>
         <button class="btn-ghost" id="copy">Copy</button>
       </div>
@@ -550,16 +554,16 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
   function render(){
     const col = $("col");
 
-    if(!state.macro && !Object.keys(state.firms).length && !state.running){
-      col.innerHTML = `<div class="empty">
-        <h3>The stack is empty</h3>
-        <p>Pull today's brief to fill it: macro conditions at the base, your named firms on the floors above.</p>
-        <button class="btn" id="pull2">Pull brief</button>
-      </div>` + watchHTML();
-      $("pull2").onclick = run;
-      wireWatch(); renderRail(); return;
-    }
+    if(!state.macro && !Object.keys(state.firms).length){
+  col.innerHTML = `<div class="empty">
+    <h3>Today’s brief is not ready yet</h3>
+    <p>The brief updates automatically at 8:00 AM ET each weekday.</p>
+  </div>` + watchHTML();
 
+  wireWatch();
+  renderRail();
+  return;
+}
     let html = localHTML();
     html += `<div class="sect-rule"><h2>Macro</h2><span>${MACRO_SECTIONS.length} sections</span></div>`;
 
@@ -645,25 +649,48 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
       </section>`;
   }
 
-  function wireLocal(){
-    const inp = $("mktin");
-    if(!inp) return;
-    const set = ()=>{
-      const v = inp.value.trim();
-      if(!v) return;
-      state.local.override = v;
-      state.local.geo = null;
-      pullLocal();
-    };
-    $("mktset").onclick = set;
-    inp.onkeydown = e => { if(e.key === "Enter") set(); };
-    const clear = $("mktclear");
-    if(clear) clear.onclick = ()=>{
+  function wireLocal() {
+  const inp = $("mktin");
+  if (!inp) return;
+
+  const set = async () => {
+    const v = inp.value.trim();
+    if (!v) return;
+
+    state.local.override = v;
+    state.local.market = v;
+    state.local.geo = null;
+
+    await save(KEY_MARKET, {
+      override: v,
+      market: v
+    });
+
+    render();
+  };
+
+  $("mktset").onclick = set;
+  inp.onkeydown = e => {
+    if (e.key === "Enter") set();
+  };
+
+  const clear = $("mktclear");
+
+  if (clear) {
+    clear.onclick = async () => {
       state.local.override = null;
       state.local.market = null;
-      pullLocal();
+      state.local.geo = null;
+
+      await save(KEY_MARKET, {
+        override: null,
+        market: null
+      });
+
+      render();
     };
   }
+}
 
   function watchHTML(){
     return `<div class="sect-rule"><h2>Add a firm</h2></div>
@@ -682,7 +709,6 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
       await save(KEY_WATCH,state.watchlist);
       inp.value = "";
       render();
-      if(state.macro) pullFirm(v);
     };
     btn.onclick = add;
     inp.onkeydown = e => { if(e.key==="Enter") add(); };
@@ -711,36 +737,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     render();
   }
 
-  async function run(){
-    if(state.running) return;
-    state.running = true;
-    state.macroErr = null; state.macro = null; state.firms = {};
-    state.local.items = []; state.local.fundamentals = [];
-    $("pull").disabled = true; $("pull").textContent = "Pulling…";
-    render();
 
-    // Ground first: re-check location, then macro, then the floors above.
-    const localJob = pullLocal();
-
-    try{
-      const d = await ask(macroPrompt());
-      state.macro = d;
-      state.pulse = d.pulse||[];
-      renderPulse();
-    }catch(e){
-      state.macroErr = "The macro pull came back empty: " + e.message + ".";
-    }
-    render();
-
-    // two floors at a time — keeps the searches from stepping on each other
-    const queue = [...state.watchlist];
-    async function worker(){ while(queue.length) await pullFirm(queue.shift()); }
-    await Promise.all([worker(),worker(),localJob]);
-
-    state.running = false;
-    $("pull").disabled = false; $("pull").textContent = "Refresh brief";
-    await save(KEY_BRIEF,{date:dateISO,macro:state.macro,pulse:state.pulse,firms:state.firms,local:state.local});
-  }
 
   /* ── copy out ────────────────────────────── */
   $("copy").onclick = ()=>{
@@ -774,21 +771,33 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     setTimeout(()=>$("copy").textContent = "Copy", 1400);
   };
 
-  $("pull").onclick = run;
 
   /* ── bridge to the push layer ─────────────── */
   // Lets the subscribe call send your real watchlist + market to the cron,
   // and lets a pushed brief render without re-running every search.
   window.__creState = () => state;
-  window.__creLoad = brief => {
-    state.macro = brief.macro || null;
-    state.pulse = brief.macro?.pulse || [];
-    state.firms = brief.firms || {};
-    if(brief.local) Object.assign(state.local, brief.local,
-      { status: brief.local.items?.length ? "done" : "idle" });
-    $("pull").textContent = "Refresh brief";
-    renderPulse(); render();
-  };
+  window.__creLoad = async brief => {
+  state.macro = brief.macro || null;
+  state.pulse = brief.pulse || brief.macro?.pulse || [];
+  state.firms = brief.firms || {};
+
+  if (brief.local) {
+    Object.assign(state.local, brief.local, {
+      status: brief.local.items?.length ? "done" : "idle"
+    });
+  }
+
+  await save(KEY_BRIEF, {
+    date: brief.date || dateISO,
+    macro: state.macro,
+    pulse: state.pulse,
+    firms: state.firms,
+    local: state.local
+  });
+
+  renderPulse();
+  render();
+};
 
   /* ── boot ────────────────────────────────── */
   (async function(){
@@ -801,7 +810,6 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     if(b && b.date === dateISO){
       state.macro = b.macro; state.pulse = b.pulse||[]; state.firms = b.firms||{};
       if(b.local) state.local = Object.assign(state.local, b.local, {status:b.local.items?.length?"done":"idle"});
-      $("pull").textContent = "Refresh brief";
       renderPulse();
     }
     render();
