@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08202F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CRE Brief">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>CRE Daily Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html,body{background:#08202F}
+  #cre-root{padding-top:max(18px,env(safe-area-inset-top))!important;padding-bottom:max(18px,env(safe-area-inset-bottom))!important}
+  .btn-ghost.armed{color:#F2B441;border-color:#7A5A1E}
+</style>
+</head>
+<body>
+<style>
+  :root{
+    --field:#08202F;
+    --surface:#0D2C40;
+    --surface-2:#123A53;
+    --line:#2A5C7A;
+    --line-soft:#1A4661;
+    --print:#E9F3F8;
+    --dim:#8DB0C4;
+    --dimmer:#5E88A0;
+    --pencil:#F2B441;
+    --pencil-deep:#7A5A1E;
+    --redline:#E0654B;
+
+    --display:'Barlow Condensed','Oswald','Arial Narrow',sans-serif;
+    --body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --data:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  #cre-root{
+    font-family:var(--body);
+    color:var(--print);
+    background-color:var(--field);
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:28px 28px;
+    background-position:-1px -1px;
+    min-height:100vh;
+    padding:18px;
+    font-size:14px;
+    line-height:1.5;
+  }
+  #cre-root::selection,#cre-root ::selection{background:var(--pencil);color:var(--field)}
+
+  .sheet{max-width:1180px;margin:0 auto}
+
+  /* ── Titleblock ─────────────────────────────── */
+  .titleblock{
+    border:1px solid var(--line);
+    background:var(--surface);
+    display:grid;
+    grid-template-columns:minmax(230px,1.4fr) repeat(4,1fr) auto;
+  }
+  .tb-cell{
+    border-left:1px solid var(--line-soft);
+    padding:10px 12px;
+    min-width:0;
+  }
+  .tb-cell:first-child{border-left:0}
+  .tb-label{
+    font-family:var(--display);
+    text-transform:uppercase;
+    letter-spacing:.14em;
+    font-size:10px;
+    color:var(--dimmer);
+    display:block;
+    margin-bottom:3px;
+  }
+  .tb-value{font-family:var(--data);font-size:15px;font-weight:500;letter-spacing:-.01em}
+  .tb-note{font-size:10.5px;color:var(--dim);margin-top:2px;line-height:1.35}
+  .tb-title{
+    font-family:var(--display);
+    font-size:30px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    line-height:1;
+  }
+  .tb-sub{font-family:var(--data);font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.02em}
+  .tb-actions{display:flex;align-items:center;gap:8px;padding:10px 12px;border-left:1px solid var(--line-soft)}
+
+  button{font-family:var(--display);cursor:pointer;border-radius:0}
+  .btn{
+    background:var(--pencil);
+    color:#1A1204;
+    border:1px solid var(--pencil);
+    padding:8px 16px;
+    font-size:13px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    transition:transform .08s ease, filter .15s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{filter:brightness(1.12)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{background:transparent;color:var(--dimmer);border-color:var(--line);cursor:wait}
+  .btn-ghost{
+    background:transparent;color:var(--dim);border:1px solid var(--line);
+    padding:8px 12px;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;
+  }
+  .btn-ghost:hover{color:var(--print);border-color:var(--dim)}
+  :focus-visible{outline:2px solid var(--pencil);outline-offset:2px}
+
+  /* ── Body grid ──────────────────────────────── */
+  .plan{display:grid;grid-template-columns:212px 1fr;gap:18px;margin-top:18px;align-items:start}
+
+  /* ── Stack rail (signature) ─────────────────── */
+  .rail{position:sticky;top:18px}
+  .rail-head{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.14em;
+    font-size:10px;color:var(--dimmer);margin-bottom:8px;
+    display:flex;justify-content:space-between;
+  }
+  .tower{border:1px solid var(--line);border-bottom-width:3px;background:var(--surface);display:flex;flex-direction:column}
+  .floor{
+    display:grid;grid-template-columns:26px 1fr;align-items:center;
+    border-bottom:1px solid var(--line-soft);
+    background:transparent;color:var(--dim);
+    text-align:left;width:100%;padding:0;
+    transition:background .15s ease,color .15s ease;
+  }
+  .tower .floor:first-child{border-bottom:1px solid var(--line-soft)}
+  .tower .floor:last-child{border-bottom:0}
+  .floor-num{
+    font-family:var(--data);font-size:9px;color:var(--dimmer);
+    text-align:center;border-right:1px solid var(--line-soft);
+    align-self:stretch;display:flex;align-items:center;justify-content:center;
+  }
+  .floor-band{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;
+    font-size:12px;padding:7px 9px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    background:repeating-linear-gradient(45deg,transparent 0 5px,var(--line-soft) 5px 6px);
+  }
+  .floor.leased .floor-band{background:rgba(242,180,65,.16);color:var(--pencil)}
+  .floor.podium .floor-band{background:rgba(233,243,248,.07);color:var(--dim)}
+  .floor:hover .floor-band{color:var(--print);background:rgba(233,243,248,.14)}
+  .floor.leased:hover .floor-band{background:rgba(242,180,65,.3);color:var(--pencil)}
+  .floor.pulling .floor-band{animation:scan 1.1s linear infinite;color:var(--print)}
+  @keyframes scan{
+    from{background-position:0 0}
+    to{background-position:16px 0}
+  }
+  .grade{
+    border-top:1px solid var(--line);margin-top:2px;padding-top:5px;
+    display:flex;justify-content:space-between;
+    font-family:var(--data);font-size:9px;color:var(--dimmer);letter-spacing:.04em;
+  }
+
+  /* ── Site (local market) — the ground the stack sits on ── */
+  .grade-line{
+    height:0;border-top:2px solid var(--pencil-deep);
+    position:relative;flex:none;
+  }
+  .grade-line::after{
+    content:'GRADE';position:absolute;right:4px;top:2px;
+    font-family:var(--data);font-size:7.5px;color:var(--pencil-deep);letter-spacing:.12em;
+  }
+  .floor.site .floor-band{
+    background:repeating-linear-gradient(-45deg,rgba(242,180,65,.05) 0 4px,rgba(242,180,65,.13) 4px 8px);
+    color:var(--dim);
+  }
+  .floor.site.leased .floor-band{
+    background:repeating-linear-gradient(-45deg,rgba(242,180,65,.18) 0 4px,rgba(242,180,65,.34) 4px 8px);
+    color:var(--pencil);
+  }
+  .floor.site .floor-num{color:var(--pencil-deep)}
+
+  .fund{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    border-bottom:1px solid var(--line-soft);background:rgba(8,32,47,.5);
+  }
+  .fund > div{padding:8px 10px;border-left:1px solid var(--line-soft);min-width:0}
+  .fund > div:first-child{border-left:0}
+  .fund .tb-value{font-size:13px}
+
+  .locbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--line-soft)}
+  .locbar .hint{font-size:11.5px;color:var(--dimmer);flex:1;min-width:160px}
+  .locbar input{
+    background:var(--field);border:1px solid var(--line);color:var(--print);
+    font-family:var(--body);font-size:12.5px;padding:6px 9px;min-width:150px;flex:1;
+  }
+  .locbar input:focus{outline:none;border-color:var(--dim)}
+  .fix{font-family:var(--data);font-size:10px;color:var(--pencil);letter-spacing:.03em}
+  .legend{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+  .legend div{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--dimmer)}
+  .swatch{width:16px;height:10px;border:1px solid var(--line);flex:none}
+  .swatch.on{background:rgba(242,180,65,.4);border-color:var(--pencil-deep)}
+  .swatch.off{background:repeating-linear-gradient(45deg,transparent 0 3px,var(--line) 3px 4px)}
+
+  /* ── Content column ─────────────────────────── */
+  .col{display:flex;flex-direction:column;gap:18px;min-width:0}
+  .sect-rule{
+    display:flex;align-items:baseline;gap:12px;
+    border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:2px;
+  }
+  .sect-rule h2{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;
+    font-size:15px;font-weight:600;color:var(--print);
+  }
+  .sect-rule span{font-family:var(--data);font-size:10px;color:var(--dimmer);margin-left:auto}
+
+  .card{border:1px solid var(--line);background:var(--surface);scroll-margin-top:18px}
+  .card-head{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 12px;border-bottom:1px solid var(--line-soft);
+    background:var(--surface-2);
+  }
+  .card-head h3{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.09em;
+    font-size:14px;font-weight:600;
+  }
+  .card-head .meta{margin-left:auto;font-family:var(--data);font-size:10px;color:var(--dimmer)}
+  .drop{
+    background:transparent;border:1px solid var(--line);color:var(--dimmer);
+    font-family:var(--data);font-size:11px;padding:1px 6px;line-height:1.4;
+  }
+  .drop:hover{color:var(--redline);border-color:var(--redline)}
+
+  .item{padding:11px 12px;border-bottom:1px solid var(--line-soft);display:grid;grid-template-columns:1fr;gap:3px}
+  .item:last-child{border-bottom:0}
+  .item h4{font-size:14px;font-weight:600;line-height:1.35;letter-spacing:-.005em}
+  .item p{font-size:12.5px;color:var(--dim);line-height:1.5}
+  .why{
+    font-size:11.5px;color:var(--pencil);
+    border-left:2px solid var(--pencil-deep);padding-left:8px;margin-top:4px;
+  }
+  .foot{display:flex;gap:10px;align-items:center;margin-top:5px;flex-wrap:wrap}
+  .tag{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;
+    font-size:9.5px;color:var(--field);background:var(--dim);padding:1px 6px;
+  }
+  .tag.deal{background:var(--pencil)}
+  .tag.capital{background:#7FD1AE}
+  .tag.leasing{background:#9EC5E8}
+  .tag.earnings{background:#E0A0C8}
+  .src{font-family:var(--data);font-size:10px;color:var(--dimmer);text-decoration:none;border-bottom:1px dotted var(--line)}
+  .src:hover{color:var(--pencil);border-color:var(--pencil)}
+
+  .pending{padding:14px 12px;font-family:var(--data);font-size:11px;color:var(--dimmer)}
+  .pending::after{content:'';animation:dots 1.4s steps(4,end) infinite}
+  @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+  .quiet{padding:14px 12px;font-size:12.5px;color:var(--dimmer)}
+  .err{padding:12px;font-size:12.5px;color:var(--redline);border-left:2px solid var(--redline)}
+
+  /* ── Watchlist editor ───────────────────────── */
+  .add{display:flex;gap:0;margin-top:2px}
+  .add input{
+    flex:1;background:var(--field);border:1px solid var(--line);border-right:0;
+    color:var(--print);font-family:var(--body);font-size:13px;padding:8px 10px;
+  }
+  .add input::placeholder{color:var(--dimmer)}
+  .add input:focus{outline:none;border-color:var(--dim)}
+  .add input:focus-visible{outline:2px solid var(--pencil);outline-offset:-2px}
+
+  /* ── Empty state ────────────────────────────── */
+  .empty{border:1px dashed var(--line);padding:36px 24px;text-align:center;background:var(--surface)}
+  .empty h3{font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:18px;margin-bottom:6px}
+  .empty p{color:var(--dim);font-size:13px;max-width:44ch;margin:0 auto 16px}
+
+  @media (max-width:860px){
+    #cre-root{padding:10px}
+    .titleblock{grid-template-columns:1fr 1fr}
+    .tb-cell:nth-child(1){grid-column:1/-1;border-bottom:1px solid var(--line-soft)}
+    .tb-cell:nth-child(2),.tb-cell:nth-child(4){border-left:0}
+    .tb-cell:nth-child(4),.tb-cell:nth-child(5){border-top:1px solid var(--line-soft)}
+    .tb-actions{grid-column:1/-1;border-left:0;border-top:1px solid var(--line-soft)}
+    .btn{flex:1}
+    .plan{grid-template-columns:1fr}
+    .rail{position:static}
+    .tower{flex-direction:row;overflow-x:auto;border-bottom-width:1px;border-right-width:3px}
+    .floor{grid-template-columns:1fr;border-bottom:0;border-right:1px solid var(--line-soft);flex:none}
+    .floor-num{display:none}
+    .legend{flex-direction:row;gap:14px;flex-wrap:wrap}
+    .grade{display:none}
+    .fund{grid-template-columns:1fr 1fr}
+    .fund > div:nth-child(3){border-left:0}
+    .fund > div:nth-child(n+3){border-top:1px solid var(--line-soft)}
+    .grade-line{border-top:0;border-left:2px solid var(--pencil-deep);height:auto;width:0}
+    .grade-line::after{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+
+<div id="cre-root">
+  <div class="sheet">
+    <div class="titleblock">
+      <div class="tb-cell">
+        <div class="tb-title">CRE Daily Brief</div>
+        <div class="tb-sub" id="sub">Macro tape + named firms</div>
+      </div>
+      <div class="tb-cell"><span class="tb-label">10Y UST</span><div class="tb-value" id="p0">—</div><div class="tb-note" id="p0n"></div></div>
+      <div class="tb-cell"><span class="tb-label">SOFR</span><div class="tb-value" id="p1">—</div><div class="tb-note" id="p1n"></div></div>
+      <div class="tb-cell"><span class="tb-label">CMBS spreads</span><div class="tb-value" id="p2">—</div><div class="tb-note" id="p2n"></div></div>
+      <div class="tb-cell"><span class="tb-label">Cap rates</span><div class="tb-value" id="p3">—</div><div class="tb-note" id="p3n"></div></div>
+      <div class="tb-actions">
+        <button class="btn" id="pull">Pull brief</button>
+        <button class="btn-ghost" id="notify">Notify</button>
+        <button class="btn-ghost" id="copy">Copy</button>
+      </div>
+    </div>
+
+    <div class="plan">
+      <aside class="rail">
+        <div class="rail-head"><span>Stack</span><span id="railcount"></span></div>
+        <div class="tower" id="tower"></div>
+        <div class="grade"><span>GRADE</span><span>MACRO AT BASE</span></div>
+        <div class="legend">
+          <div><span class="swatch on"></span> Activity today</div>
+          <div><span class="swatch off"></span> Vacant — nothing new</div>
+        </div>
+      </aside>
+
+      <main class="col" id="col"></main>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const MACRO_SECTIONS = [
+    "Rates & debt",
+    "Capital markets",
+    "Office",
+    "Industrial & data centers",
+    "Multifamily & retail"
+  ];
+  const DEFAULT_FIRMS = ["CBRE","JLL","Blackstone Real Estate","Prologis","Hines"];
+  const KEY_WATCH = "cre-stack:watchlist";
+  const KEY_BRIEF = "cre-stack:brief";
+  const KEY_MARKET = "cre-stack:market";
+
+  const today = new Date();
+  const dateISO = today.toISOString().slice(0,10);
+  const dateLong = today.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+  let state = {
+    watchlist:[...DEFAULT_FIRMS], macro:null, firms:{}, pulse:[], running:false,
+    // local: geo = {lat,lng} from the browser; override = market the user typed;
+    // status = idle | locating | pulling | done | error | blocked
+    local:{ status:"idle", geo:null, override:null, market:null, submarket:null, items:[], fundamentals:[], msg:"" }
+  };
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s??"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+
+  /* ── storage ─────────────────────────────── */
+  async function load(key){
+    try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+    catch(e){ return null; }
+  }
+  async function save(key,val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+    if(window.syncSub) window.syncSub();
+  }
+
+  /* ── model call ──────────────────────────── */
+  async function ask(prompt){
+    const res = await fetch("/api/ask",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({prompt})
+    });
+    if(!res.ok) throw new Error("Request failed (" + res.status + ")");
+    const { text } = await res.json();
+    return parseJSON(text);
+  }
+  function parseJSON(text){
+    let t = text.replace(/```json/g,"").replace(/```/g,"").trim();
+    const a = t.indexOf("{"), b = t.lastIndexOf("}");
+    if(a === -1 || b === -1) throw new Error("No results came back in a readable shape.");
+    return JSON.parse(t.slice(a,b+1));
+  }
+
+  /* ── prompts ─────────────────────────────── */
+  function macroPrompt(){
+    return `Today is ${dateLong}. Search the web for the latest commercial real estate news and market data from the past 48 hours. Cover: Treasury yields and Fed policy, CRE debt/CMBS/lending conditions, transaction volume and cap rates, and sector news across office, industrial, data centers, multifamily and retail.
+
+Brief a commercial real estate professional. Prioritize what moved and what is actionable. Use real, current figures from your search.
+
+Return ONLY a JSON object, no prose, no markdown:
+{"pulse":[{"value":"4.28%","note":"+6bps on the week"},{"value":"4.33%","note":"flat"},{"value":"AAA +82","note":"tightening"},{"value":"Stable","note":"industrial 5.5-6.0%"}],
+"sections":[{"title":"Rates & debt","items":[{"headline":"short factual headline","detail":"25 words max on what happened, with figures","why":"12 words max on what it means for CRE","source":"outlet name","url":"https://..."}]}]}
+
+"pulse" must have exactly 4 entries in this order: 10Y Treasury, SOFR, CMBS spreads, cap rate direction.
+"sections" must be exactly these 5 titles in this order: ${MACRO_SECTIONS.map(s=>'"'+s+'"').join(", ")}. Give 1-2 items each. If a sector had no real news, return an empty items array rather than filler.`;
+  }
+  function localPrompt(){
+    const L = state.local;
+    const where = L.override
+      ? `The user's market is "${L.override}".`
+      : `The user is at latitude ${L.geo.lat.toFixed(4)}, longitude ${L.geo.lng.toFixed(4)}. First identify the metro area and the specific CRE submarket those coordinates fall in.`;
+
+    return `Today is ${dateLong}. ${where}
+
+Search the web for commercial real estate news and market data specific to that metro from the past 14 days: notable sales and acquisitions, major leases, new development and entitlements, and market fundamentals. Use the metro's real CRE vocabulary and named submarkets.
+
+Return ONLY a JSON object, no prose, no markdown:
+{"market":"Metro name, ST","submarket":"nearest CRE submarket name",
+"fundamentals":[{"value":"18.4%","note":"office vacancy, Q2"},{"value":"$34.10","note":"office asking, NNN"},{"value":"5.2%","note":"industrial vacancy"},{"value":"2.1M SF","note":"under construction"}],
+"items":[{"headline":"short factual headline","detail":"30 words max with price, PSF, address, buyer/seller or tenant","date":"Jul 12","tag":"deal","source":"outlet name","url":"https://..."}]}
+
+"market" must be the real metro name, never coordinates. "fundamentals" must have exactly 4 entries in this order: office vacancy, office asking rent, industrial vacancy, construction pipeline — with the metro's actual current figures from your search. Give up to 5 items, newest first. "tag" must be one of: deal, capital, leasing, development, other. Only include real news with a working source URL. If the metro is small and has little CRE coverage, widen to the nearest major metro and say so in "market". Never invent a story.`;
+  }
+
+  function firmPrompt(firm){
+    return `Today is ${dateLong}. Search the web for news about the commercial real estate firm "${firm}" from the past 7 days — acquisitions, dispositions, financings, fund closes, leasing, earnings, and leadership changes.
+
+Return ONLY a JSON object, no prose, no markdown:
+{"items":[{"headline":"short factual headline","detail":"30 words max, with deal size, asset, market and counterparty where known","date":"Jul 14","tag":"deal","source":"outlet name","url":"https://..."}]}
+
+Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earnings, people, other. Only include real news you found in search results with a working source URL. If there is nothing from the past 7 days, return {"items":[]}. Never invent a story.`;
+  }
+
+  /* ── location ────────────────────────────── */
+  // Asked fresh on every pull so the brief follows you if you travel.
+  // The browser only prompts once; after that it answers silently.
+  function locate(){
+    return new Promise(resolve=>{
+      if(!navigator.geolocation){
+        return resolve({ok:false,msg:"This browser doesn't offer location."});
+      }
+      let settled = false;
+      const done = r => { if(!settled){ settled = true; resolve(r); } };
+      setTimeout(()=>done({ok:false,msg:"Location took too long to answer."}), 12000);
+
+      navigator.geolocation.getCurrentPosition(
+        p => done({ok:true, lat:p.coords.latitude, lng:p.coords.longitude}),
+        e => {
+          const msg = e.code === 1 ? "Location permission is off."
+                    : e.code === 2 ? "Your position isn't available right now."
+                    : "Location timed out.";
+          done({ok:false, msg});
+        },
+        {enableHighAccuracy:false, timeout:11000, maximumAge:300000}
+      );
+    });
+  }
+
+  async function pullLocal(){
+    const L = state.local;
+
+    if(!L.override){
+      L.status = "locating"; L.msg = ""; render();
+      const pos = await locate();
+      if(pos.ok){
+        L.geo = {lat:pos.lat, lng:pos.lng};
+      } else {
+        L.status = "blocked";
+        L.msg = pos.msg + " Type your market below and the local floor will fill in.";
+        render(); return;
+      }
+    }
+
+    L.status = "pulling"; render();
+    try{
+      const d = await ask(localPrompt());
+      L.market = d.market || L.override || "Your market";
+      L.submarket = d.submarket || "";
+      L.items = Array.isArray(d.items) ? d.items : [];
+      L.fundamentals = Array.isArray(d.fundamentals) ? d.fundamentals : [];
+      L.status = "done";
+      await save(KEY_MARKET, {override:L.override, market:L.market});
+    }catch(e){
+      L.status = "error";
+      L.msg = "The local pull came back empty: " + e.message;
+    }
+    render();
+  }
+
+  /* ── rail ────────────────────────────────── */
+  function renderRail(){
+    const floors = [];
+    state.watchlist.forEach(f=>{
+      const rec = state.firms[f];
+      floors.push({
+        label:f, target:"firm-"+slug(f),
+        cls: rec?.status==="pulling" ? "pulling" : (rec?.items?.length ? "leased" : "")
+      });
+    });
+    floors.reverse();
+    MACRO_SECTIONS.slice().reverse().forEach(s=>{
+      const has = state.macro?.sections?.find(x=>x.title===s)?.items?.length;
+      floors.push({ label:s, target:"macro-"+slug(s), cls:"podium" + (has?" leased":"") });
+    });
+
+    const n = floors.length;
+    let html = floors.map((f,i)=>`
+      <button class="floor ${f.cls}" data-t="${f.target}" title="${esc(f.label)}">
+        <span class="floor-num">${n-i}</span>
+        <span class="floor-band">${esc(f.label)}</span>
+      </button>`).join("");
+
+    // Below grade: your local market is the ground everything else sits on.
+    const L = state.local;
+    const siteLabel = L.market ? L.market : "Site — locate me";
+    const siteCls = "site" + (L.items.length ? " leased" : "")
+                  + (["locating","pulling"].includes(L.status) ? " pulling" : "");
+    html += `<div class="grade-line"></div>
+      <button class="floor ${siteCls}" data-t="local" title="${esc(siteLabel)}">
+        <span class="floor-num">G</span>
+        <span class="floor-band">${esc(siteLabel)}</span>
+      </button>`;
+
+    $("tower").innerHTML = html;
+
+    const active = floors.filter(f=>f.cls.includes("leased")).length + (L.items.length?1:0);
+    $("railcount").textContent = active + "/" + (n+1) + " active";
+
+    $("tower").querySelectorAll(".floor").forEach(b=>{
+      b.onclick = ()=> document.getElementById(b.dataset.t)?.scrollIntoView({behavior:"smooth",block:"start"});
+    });
+  }
+
+  /* ── item rendering ──────────────────────── */
+  function itemHTML(it, showTag){
+    const src = it.url
+      ? `<a class="src" href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.source||"source")} ↗</a>`
+      : (it.source ? `<span class="src">${esc(it.source)}</span>` : "");
+    const tag = showTag && it.tag ? `<span class="tag ${esc(it.tag)}">${esc(it.tag)}</span>` : "";
+    const date = it.date ? `<span class="src">${esc(it.date)}</span>` : "";
+    return `<article class="item">
+      <h4>${esc(it.headline)}</h4>
+      <p>${esc(it.detail)}</p>
+      ${it.why ? `<div class="why">${esc(it.why)}</div>` : ""}
+      <div class="foot">${tag}${date}${src}</div>
+    </article>`;
+  }
+
+  /* ── main render ─────────────────────────── */
+  function render(){
+    const col = $("col");
+
+    if(!state.macro && !Object.keys(state.firms).length && !state.running){
+      col.innerHTML = `<div class="empty">
+        <h3>The stack is empty</h3>
+        <p>Pull today's brief to fill it: macro conditions at the base, your named firms on the floors above.</p>
+        <button class="btn" id="pull2">Pull brief</button>
+      </div>` + watchHTML();
+      $("pull2").onclick = run;
+      wireWatch(); renderRail(); return;
+    }
+
+    let html = localHTML();
+    html += `<div class="sect-rule"><h2>Macro</h2><span>${MACRO_SECTIONS.length} sections</span></div>`;
+
+    if(state.macroErr){
+      html += `<div class="card"><div class="err">${esc(state.macroErr)} Try pulling again.</div></div>`;
+    } else if(!state.macro){
+      html += MACRO_SECTIONS.map(s=>`<section class="card" id="macro-${slug(s)}">
+        <div class="card-head"><h3>${esc(s)}</h3></div>
+        <div class="pending">Searching</div></section>`).join("");
+    } else {
+      html += MACRO_SECTIONS.map(s=>{
+        const sec = state.macro.sections?.find(x=>x.title===s);
+        const items = sec?.items||[];
+        return `<section class="card" id="macro-${slug(s)}">
+          <div class="card-head"><h3>${esc(s)}</h3><span class="meta">${items.length} item${items.length===1?"":"s"}</span></div>
+          ${items.length ? items.map(i=>itemHTML(i,false)).join("") : `<div class="quiet">Nothing moved here today.</div>`}
+        </section>`;
+      }).join("");
+    }
+
+    html += `<div class="sect-rule"><h2>Watchlist</h2><span>${state.watchlist.length} firms</span></div>`;
+    html += state.watchlist.map(f=>{
+      const r = state.firms[f];
+      let body;
+      if(!r || r.status==="pulling") body = `<div class="pending">Searching</div>`;
+      else if(r.status==="error") body = `<div class="err">${esc(r.msg)}</div>`;
+      else if(!r.items.length) body = `<div class="quiet">No news in the past 7 days.</div>`;
+      else body = r.items.map(i=>itemHTML(i,true)).join("");
+      return `<section class="card" id="firm-${slug(f)}">
+        <div class="card-head">
+          <h3>${esc(f)}</h3>
+          <span class="meta">${r&&r.items?r.items.length+" item"+(r.items.length===1?"":"s"):""}</span>
+          <button class="drop" data-drop="${esc(f)}" title="Remove ${esc(f)}">remove</button>
+        </div>${body}</section>`;
+    }).join("");
+
+    html += watchHTML();
+    col.innerHTML = html;
+
+    col.querySelectorAll("[data-drop]").forEach(b=>{
+      b.onclick = async ()=>{
+        state.watchlist = state.watchlist.filter(f=>f!==b.dataset.drop);
+        delete state.firms[b.dataset.drop];
+        await save(KEY_WATCH,state.watchlist); render();
+      };
+    });
+    wireLocal(); wireWatch(); renderRail();
+  }
+
+  function localHTML(){
+    const L = state.local;
+    const title = L.market || "Local market";
+    const sub = L.submarket ? `<span class="meta">${esc(L.submarket)}</span>` : "";
+
+    const bar = `<div class="locbar">
+      ${L.geo && !L.override ? `<span class="fix">FIX ${L.geo.lat.toFixed(3)}, ${L.geo.lng.toFixed(3)}</span>` : ""}
+      <span class="hint">${L.override ? "Set by hand." : "Set from your device on every pull."}</span>
+      <input id="mktin" placeholder="Or type a market — Denver, CO" value="${esc(L.override||"")}" autocomplete="off">
+      <button class="btn-ghost" id="mktset">Use market</button>
+      ${L.override ? `<button class="btn-ghost" id="mktclear">Use my location</button>` : ""}
+    </div>`;
+
+    let body;
+    if(L.status === "locating") body = `<div class="pending">Getting your location</div>`;
+    else if(L.status === "pulling") body = `<div class="pending">Searching ${esc(L.override||"your market")}</div>`;
+    else if(L.status === "blocked") body = `<div class="err">${esc(L.msg)}</div>`;
+    else if(L.status === "error") body = `<div class="err">${esc(L.msg)} Try pulling again.</div>`;
+    else if(L.status === "idle") body = `<div class="quiet">Pull the brief and this fills with deals, leases and fundamentals where you are.</div>`;
+    else if(!L.items.length) body = `<div class="quiet">Nothing reported in this market in the past two weeks.</div>`;
+    else body = L.items.map(i=>itemHTML(i,true)).join("");
+
+    const funds = L.fundamentals?.length ? `<div class="fund">${
+      L.fundamentals.slice(0,4).map(f=>`<div>
+        <span class="tb-label">${esc((f.note||"").split(",")[0])}</span>
+        <div class="tb-value">${esc(f.value)}</div>
+        <div class="tb-note">${esc(f.note||"")}</div>
+      </div>`).join("")}</div>` : "";
+
+    return `<div class="sect-rule"><h2>Site</h2><span>at grade</span></div>
+      <section class="card" id="local">
+        <div class="card-head"><h3>${esc(title)}</h3>${sub}</div>
+        ${bar}${funds}${body}
+      </section>`;
+  }
+
+  function wireLocal(){
+    const inp = $("mktin");
+    if(!inp) return;
+    const set = ()=>{
+      const v = inp.value.trim();
+      if(!v) return;
+      state.local.override = v;
+      state.local.geo = null;
+      pullLocal();
+    };
+    $("mktset").onclick = set;
+    inp.onkeydown = e => { if(e.key === "Enter") set(); };
+    const clear = $("mktclear");
+    if(clear) clear.onclick = ()=>{
+      state.local.override = null;
+      state.local.market = null;
+      pullLocal();
+    };
+  }
+
+  function watchHTML(){
+    return `<div class="sect-rule"><h2>Add a firm</h2></div>
+      <div class="add">
+        <input id="firmin" placeholder="Brookfield, Related, Tishman Speyer…" autocomplete="off">
+        <button class="btn" id="firmadd">Add floor</button>
+      </div>`;
+  }
+  function wireWatch(){
+    const inp = $("firmin"), btn = $("firmadd");
+    if(!inp) return;
+    const add = async ()=>{
+      const v = inp.value.trim();
+      if(!v || state.watchlist.some(f=>f.toLowerCase()===v.toLowerCase())) return;
+      state.watchlist.push(v);
+      await save(KEY_WATCH,state.watchlist);
+      inp.value = "";
+      render();
+      if(state.macro) pullFirm(v);
+    };
+    btn.onclick = add;
+    inp.onkeydown = e => { if(e.key==="Enter") add(); };
+  }
+
+  function renderPulse(){
+    const labels = ["10Y UST","SOFR","CMBS spreads","Cap rates"];
+    (state.pulse||[]).forEach((p,i)=>{
+      if(i>3) return;
+      $("p"+i).textContent = p.value || "—";
+      $("p"+i+"n").textContent = p.note || "";
+    });
+    $("sub").textContent = dateLong;
+  }
+
+  /* ── pulling ─────────────────────────────── */
+  async function pullFirm(firm){
+    state.firms[firm] = {status:"pulling",items:[]};
+    render();
+    try{
+      const d = await ask(firmPrompt(firm));
+      state.firms[firm] = {status:"done", items:Array.isArray(d.items)?d.items:[]};
+    }catch(e){
+      state.firms[firm] = {status:"error", items:[], msg:"Couldn't reach the news for "+firm+". "+e.message};
+    }
+    render();
+  }
+
+  async function run(){
+    if(state.running) return;
+    state.running = true;
+    state.macroErr = null; state.macro = null; state.firms = {};
+    state.local.items = []; state.local.fundamentals = [];
+    $("pull").disabled = true; $("pull").textContent = "Pulling…";
+    render();
+
+    // Ground first: re-check location, then macro, then the floors above.
+    const localJob = pullLocal();
+
+    try{
+      const d = await ask(macroPrompt());
+      state.macro = d;
+      state.pulse = d.pulse||[];
+      renderPulse();
+    }catch(e){
+      state.macroErr = "The macro pull came back empty: " + e.message + ".";
+    }
+    render();
+
+    // two floors at a time — keeps the searches from stepping on each other
+    const queue = [...state.watchlist];
+    async function worker(){ while(queue.length) await pullFirm(queue.shift()); }
+    await Promise.all([worker(),worker(),localJob]);
+
+    state.running = false;
+    $("pull").disabled = false; $("pull").textContent = "Refresh brief";
+    await save(KEY_BRIEF,{date:dateISO,macro:state.macro,pulse:state.pulse,firms:state.firms,local:state.local});
+  }
+
+  /* ── copy out ────────────────────────────── */
+  $("copy").onclick = ()=>{
+    let t = "CRE DAILY BRIEF — " + dateLong + "\n\n";
+    if(state.pulse?.length){
+      t += "TAPE: " + ["10Y UST","SOFR","CMBS","Cap rates"]
+        .map((l,i)=> l+" "+(state.pulse[i]?.value||"—")+" ("+(state.pulse[i]?.note||"")+")").join(" | ") + "\n\n";
+    }
+    const L = state.local;
+    if(L.items?.length){
+      t += (L.market||"LOCAL MARKET").toUpperCase() + (L.submarket?" — "+L.submarket:"") + "\n";
+      if(L.fundamentals?.length) t += "  " + L.fundamentals.map(f=>f.value+" "+(f.note||"")).join(" | ") + "\n";
+      L.items.forEach(i=> t += "  • "+i.headline+" — "+i.detail+(i.url?" "+i.url:"")+"\n");
+      t += "\n";
+    }
+    (state.macro?.sections||[]).forEach(s=>{
+      if(!s.items?.length) return;
+      t += s.title.toUpperCase()+"\n";
+      s.items.forEach(i=> t += "  • "+i.headline+" — "+i.detail+(i.why?" ["+i.why+"]":"")+(i.url?" "+i.url:"")+"\n");
+      t += "\n";
+    });
+    state.watchlist.forEach(f=>{
+      const r = state.firms[f];
+      if(!r?.items?.length) return;
+      t += f.toUpperCase()+"\n";
+      r.items.forEach(i=> t += "  • "+i.headline+" — "+i.detail+(i.url?" "+i.url:"")+"\n");
+      t += "\n";
+    });
+    navigator.clipboard.writeText(t.trim());
+    $("copy").textContent = "Copied";
+    setTimeout(()=>$("copy").textContent = "Copy", 1400);
+  };
+
+  $("pull").onclick = run;
+
+  /* ── bridge to the push layer ─────────────── */
+  // Lets the subscribe call send your real watchlist + market to the cron,
+  // and lets a pushed brief render without re-running every search.
+  window.__creState = () => state;
+  window.__creLoad = brief => {
+    state.macro = brief.macro || null;
+    state.pulse = brief.macro?.pulse || [];
+    state.firms = brief.firms || {};
+    if(brief.local) Object.assign(state.local, brief.local,
+      { status: brief.local.items?.length ? "done" : "idle" });
+    $("pull").textContent = "Refresh brief";
+    renderPulse(); render();
+  };
+
+  /* ── boot ────────────────────────────────── */
+  (async function(){
+    const w = await load(KEY_WATCH);
+    if(Array.isArray(w) && w.length) state.watchlist = w;
+    const m = await load(KEY_MARKET);
+    if(m && m.override) state.local.override = m.override;
+
+    const b = await load(KEY_BRIEF);
+    if(b && b.date === dateISO){
+      state.macro = b.macro; state.pulse = b.pulse||[]; state.firms = b.firms||{};
+      if(b.local) state.local = Object.assign(state.local, b.local, {status:b.local.items?.length?"done":"idle"});
+      $("pull").textContent = "Refresh brief";
+      renderPulse();
+    }
+    render();
+  })();
+})();
+</script>
+<script>
+/* ── Push: the part that makes this work with the app closed ── */
+(function(){
+  const KEY_SUB = "cre-stack:subid";
+  const btn = document.getElementById("notify");
+  let reg = null;
+
+  const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+
+  function b64ToU8(base64){
+    const pad = "=".repeat((4 - base64.length % 4) % 4);
+    const raw = atob((base64 + pad).replace(/-/g,"+").replace(/_/g,"/"));
+    return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+  }
+
+  // Push the current watchlist + market up so the 6:30am job builds YOUR brief.
+  window.syncSub = async function(){
+    if(!reg) return;
+    const sub = await reg.pushManager.getSubscription();
+    if(!sub) return;
+    const st = window.__creState ? window.__creState() : {};
+    await fetch("/api/subscribe",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        subscription: sub,
+        watchlist: st.watchlist || [],
+        geo: st.local?.geo || null,
+        market: st.local?.override || st.local?.market || null
+      })
+    }).catch(()=>{});
+  };
+
+  function setLabel(state){
+    if(!btn) return;
+    btn.textContent = state;
+    btn.classList.toggle("armed", state === "Notifying");
+  }
+
+  async function enable(){
+    if(!supported){
+      setLabel("No push here");
+      alert("This browser can't do push. On iPhone, add the app to your Home Screen first, then open it from there.");
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    if(perm !== "granted"){
+      setLabel("Blocked");
+      alert("Notifications are blocked. Turn them back on in your browser or phone settings for this site.");
+      return;
+    }
+    const { key } = await (await fetch("/api/key")).json();
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: b64ToU8(key)
+    });
+    const r = await fetch("/api/subscribe",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ subscription: sub, watchlist: [], geo: null, market: null })
+    });
+    const { id } = await r.json();
+    localStorage.setItem(KEY_SUB, id);
+    setLabel("Notifying");
+    await window.syncSub();
+    new Notification("CRE Brief armed", { body:"Your first brief lands tomorrow at 6:30am.", icon:"/icon-192.png" });
+  }
+
+  async function disable(){
+    const sub = await reg.pushManager.getSubscription();
+    if(sub){
+      await fetch("/api/unsubscribe",{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ endpoint: sub.endpoint })
+      }).catch(()=>{});
+      await sub.unsubscribe();
+    }
+    localStorage.removeItem(KEY_SUB);
+    setLabel("Notify");
+  }
+
+  if(btn) btn.onclick = async () => {
+    const sub = reg && await reg.pushManager.getSubscription();
+    sub ? disable() : enable();
+  };
+
+  if(supported){
+    navigator.serviceWorker.register("/sw.js").then(async r => {
+      reg = r;
+      const sub = await r.pushManager.getSubscription();
+      setLabel(sub && Notification.permission === "granted" ? "Notifying" : "Notify");
+      window.syncSub();
+    }).catch(()=> setLabel("Notify"));
+  } else {
+    setLabel("No push here");
+  }
+
+  // If the cron already built today's brief, show that instead of re-searching.
+  window.addEventListener("load", async () => {
+    const id = localStorage.getItem(KEY_SUB);
+    if(!id) return;
+    try{
+      const res = await fetch("/api/brief/" + id);
+      if(!res.ok) return;
+      const brief = await res.json();
+      if(brief.date === new Date().toISOString().slice(0,10) && window.__creLoad) window.__creLoad(brief);
+    }catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
