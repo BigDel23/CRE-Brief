@@ -772,9 +772,9 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
   };
 
 
-  /* ── bridge to the push layer ─────────────── */
+  /* ── bridge to the  layer ─────────────── */
   // Lets the subscribe call send your real watchlist + market to the cron,
-  // and lets a pushed brief render without re-running every search.
+  // and lets a ed brief render without re-running every search.
   window.__creState = () => state;
   window.__creLoad = async brief => {
   state.macro = brief.macro || null;
@@ -867,63 +867,175 @@ render();
     btn.classList.toggle("armed", state === "Notifying");
   }
 
-  async function enable(){
-    if(!supported){
+  async function enable() {
+  try {
+    if (!supported) {
       setLabel("No push here");
-      alert("This browser can't do push. On iPhone, add the app to your Home Screen first, then open it from there.");
+      alert("This browser does not support web push notifications.");
       return;
     }
-    const perm = await Notification.requestPermission();
-    if(perm !== "granted"){
+
+    setLabel("Setting up…");
+
+    // Ensure that the service worker is ready before subscribing.
+    if (!reg) {
+      reg = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
       setLabel("Blocked");
-      alert("Notifications are blocked. Turn them back on in your browser or phone settings for this site.");
+      alert("Notifications were not allowed. Check Chrome's site permissions.");
       return;
     }
-    const { key } = await (await fetch("/api/key")).json();
-    const sub = await reg.pushManager.subscribe({
+
+    const keyResponse = await fetch("/api/key");
+
+    if (!keyResponse.ok) {
+      throw new Error(
+        `Could not retrieve notification key (${keyResponse.status})`
+      );
+    }
+
+    const { key } = await keyResponse.json();
+
+    const subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: b64ToU8(key)
     });
-    const r = await fetch("/api/subscribe",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ subscription: sub, watchlist: [], geo: null, market: null })
+
+    const st = window.__creState
+      ? window.__creState()
+      : {};
+
+    const response = await fetch("/api/subscribe", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        subscription,
+        watchlist: st.watchlist || [],
+        geo: st.local?.geo || null,
+        market:
+          st.local?.override ||
+          st.local?.market ||
+          null
+      })
     });
-    const { id } = await r.json();
+
+    if (!response.ok) {
+      throw new Error(
+        `Subscription request failed (${response.status})`
+      );
+    }
+
+    const { id } = await response.json();
+
     localStorage.setItem(KEY_SUB, id);
     setLabel("Notifying");
-    await window.syncSub();
-    new Notification("CRE Brief armed", { body:"Your first brief lands tomorrow at 6:30am.", icon:"/icon-192.png" });
-  }
 
-  async function disable(){
-    const sub = await reg.pushManager.getSubscription();
-    if(sub){
-      await fetch("/api/unsubscribe",{
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ endpoint: sub.endpoint })
-      }).catch(()=>{});
-      await sub.unsubscribe();
+    new Notification("CRE Brief notifications enabled", {
+      body: "Your scheduled daily brief is now active.",
+      icon: "/icon-192.png"
+    });
+  } catch (error) {
+    console.error("Notification setup failed:", error);
+    setLabel("Try again");
+    alert(`Notification setup failed: ${error.message}`);
+  }
+}
+
+async function disable() {
+  try {
+    if (!reg) {
+      reg = await navigator.serviceWorker.ready;
     }
+
+    const subscription =
+      await reg.pushManager.getSubscription();
+
+    if (subscription) {
+      await fetch("/api/unsubscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          endpoint: subscription.endpoint
+        })
+      }).catch(() => {});
+
+      await subscription.unsubscribe();
+    }
+
     localStorage.removeItem(KEY_SUB);
     setLabel("Notify");
+  } catch (error) {
+    console.error("Notification disable failed:", error);
+    setLabel("Try again");
+    alert(`Notification error: ${error.message}`);
   }
+}
 
-  if(btn) btn.onclick = async () => {
-    const sub = reg && await reg.pushManager.getSubscription();
-    sub ? disable() : enable();
-  };
+if (btn) {
+  btn.addEventListener("click", async () => {
+    try {
+      if (!reg) {
+        reg = await navigator.serviceWorker.ready;
+      }
 
-  if(supported){
-    navigator.serviceWorker.register("/sw.js").then(async r => {
-      reg = r;
-      const sub = await r.pushManager.getSubscription();
-      setLabel(sub && Notification.permission === "granted" ? "Notifying" : "Notify");
-      window.syncSub();
-    }).catch(()=> setLabel("Notify"));
-  } else {
-    setLabel("No push here");
-  }
+      const subscription =
+        await reg.pushManager.getSubscription();
+
+      if (subscription) {
+        await disable();
+      } else {
+        await enable();
+      }
+    } catch (error) {
+      console.error("Notify button failed:", error);
+      setLabel("Try again");
+      alert(`Notification error: ${error.message}`);
+    }
+  });
+}
+
+if (supported) {
+  navigator.serviceWorker
+    .register("/sw.js")
+    .then(async registration => {
+      reg = registration;
+
+      await navigator.serviceWorker.ready;
+
+      const subscription =
+        await registration.pushManager.getSubscription();
+
+      setLabel(
+        subscription &&
+        Notification.permission === "granted"
+          ? "Notifying"
+          : "Notify"
+      );
+
+      if (subscription) {
+        await window.syncSub();
+      }
+    })
+    .catch(error => {
+      console.error(
+        "Service-worker registration failed:",
+        error
+      );
+
+      setLabel("Try again");
+    });
+} else {
+  setLabel("No push here");
+}
 
   // If the cron already built today's brief, show that instead of re-searching.
   window.addEventListener("load", async () => {
