@@ -113,7 +113,292 @@ function parseJSON(text) {
     cleaned.slice(start, end + 1)
   );
 }
+// ── direct market data ────────────────────────────────────
 
+// FRED provides simple CSV downloads and mirrors the
+// official Treasury and New York Fed series.
+//
+// DGS10 = 10-Year Treasury Constant Maturity Rate
+// SOFR  = Secured Overnight Financing Rate
+async function fetchFredSeries(seriesId) {
+  const startDate = new Date(
+    Date.now() - 21 * 24 * 60 * 60 * 1000
+  )
+    .toISOString()
+    .slice(0, 10);
+
+  const url =
+    "https://fred.stlouisfed.org/graph/fredgraph.csv" +
+    `?id=${encodeURIComponent(seriesId)}` +
+    `&cosd=${startDate}`;
+
+  const response = await fetch(url, {
+    headers: {
+      "user-agent": "CRE-Daily-Brief/1.0",
+      accept: "text/csv",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `FRED ${seriesId} request failed: ${response.status}`
+    );
+  }
+
+  const csv = await response.text();
+
+  const lines = csv
+    .trim()
+    .split(/\r?\n/)
+    .slice(1);
+
+  const observations = [];
+
+  for (const line of lines) {
+    const commaIndex =
+      line.indexOf(",");
+
+    if (commaIndex === -1) {
+      continue;
+    }
+
+    const date = line
+      .slice(0, commaIndex)
+      .trim();
+
+    const rawValue = line
+      .slice(commaIndex + 1)
+      .trim()
+      .replaceAll('"', "");
+
+    // FRED uses "." for missing observations.
+    if (
+      !rawValue ||
+      rawValue === "."
+    ) {
+      continue;
+    }
+
+    const value =
+      Number(rawValue);
+
+    if (!Number.isFinite(value)) {
+      continue;
+    }
+
+    observations.push({
+      date,
+      value,
+    });
+  }
+
+  if (!observations.length) {
+    throw new Error(
+      `No usable ${seriesId} observations returned`
+    );
+  }
+
+  const latest =
+    observations[
+      observations.length - 1
+    ];
+
+  const previous =
+    observations.length > 1
+      ? observations[
+          observations.length - 2
+        ]
+      : null;
+
+  return {
+    latest,
+    previous,
+  };
+}
+
+function formatBasisPointChange(
+  latest,
+  previous
+) {
+  if (!previous) {
+    return null;
+  }
+
+  const basisPoints = Math.round(
+    (latest.value -
+      previous.value) *
+      100
+  );
+
+  if (basisPoints === 0) {
+    return "unch.";
+  }
+
+  return basisPoints > 0
+    ? `▲ ${basisPoints}bp`
+    : `▼ ${Math.abs(
+        basisPoints
+      )}bp`;
+}
+
+function readOptionalNumber(
+  value
+) {
+  if (
+    value === undefined ||
+    value === null ||
+    String(value).trim() === ""
+  ) {
+    return null;
+  }
+
+  const number =
+    Number(value);
+
+  return Number.isFinite(number)
+    ? number
+    : null;
+}
+
+async function fetchMarketPulse() {
+  const results =
+    await Promise.allSettled([
+      fetchFredSeries("DGS10"),
+      fetchFredSeries("SOFR"),
+    ]);
+
+  const treasuryResult =
+    results[0].status ===
+    "fulfilled"
+      ? results[0].value
+      : null;
+
+  const sofrResult =
+    results[1].status ===
+    "fulfilled"
+      ? results[1].value
+      : null;
+
+  if (
+    results[0].status ===
+    "rejected"
+  ) {
+    console.error(
+      "10Y Treasury:",
+      results[0].reason?.message
+    );
+  }
+
+  if (
+    results[1].status ===
+    "rejected"
+  ) {
+    console.error(
+      "SOFR:",
+      results[1].reason?.message
+    );
+  }
+
+  /*
+   * These two values are manual until you connect
+   * a licensed CMBS/cap-rate data provider.
+   *
+   * CMBS_SPREAD_BPS example: 115
+   * CAP_RATE_PERCENT example: 5.25
+   */
+  const cmbsSpread =
+    readOptionalNumber(
+      process.env
+        .CMBS_SPREAD_BPS
+    );
+
+  const capRate =
+    readOptionalNumber(
+      process.env
+        .CAP_RATE_PERCENT
+    );
+
+  return [
+    {
+      key: "treasury10Y",
+      label: "10Y UST",
+      value: treasuryResult
+        ? `${treasuryResult.latest.value.toFixed(
+            2
+          )}%`
+        : "—",
+      change: treasuryResult
+        ? formatBasisPointChange(
+            treasuryResult.latest,
+            treasuryResult.previous
+          )
+        : null,
+      asOf:
+        treasuryResult?.latest
+          ?.date || null,
+      source:
+        "Federal Reserve H.15 via FRED",
+    },
+    {
+      key: "sofr",
+      label: "SOFR",
+      value: sofrResult
+        ? `${sofrResult.latest.value.toFixed(
+            2
+          )}%`
+        : "—",
+      change: sofrResult
+        ? formatBasisPointChange(
+            sofrResult.latest,
+            sofrResult.previous
+          )
+        : null,
+      asOf:
+        sofrResult?.latest
+          ?.date || null,
+      source:
+        "Federal Reserve Bank of New York via FRED",
+    },
+    {
+      key: "cmbsSpreads",
+      label: "CMBS SPREADS",
+      value:
+        cmbsSpread !== null
+          ? `${Math.round(
+              cmbsSpread
+            )}bp`
+          : "—",
+      change: null,
+      asOf:
+        process.env
+          .CMBS_SPREAD_AS_OF ||
+        null,
+      source:
+        process.env
+          .CMBS_SPREAD_SOURCE ||
+        "Manual benchmark",
+    },
+    {
+      key: "capRates",
+      label: "CAP RATES",
+      value:
+        capRate !== null
+          ? `${capRate.toFixed(
+              2
+            )}%`
+          : "—",
+      change: null,
+      asOf:
+        process.env
+          .CAP_RATE_AS_OF ||
+        null,
+      source:
+        process.env
+          .CAP_RATE_SOURCE ||
+        "Manual benchmark",
+    },
+  ];
+}
 // ── brief generation ──────────────────────────────────────
 async function buildBrief(sub) {
   const brief = {
@@ -129,15 +414,66 @@ async function buildBrief(sub) {
   };
 
   try {
-    brief.macro = parseJSON(
-      await ask(macroPrompt())
-    );
-  } catch (error) {
-    console.error(
-      "macro:",
-      error.message
-    );
-  }
+  brief.macro = parseJSON(
+    await ask(macroPrompt())
+  );
+} catch (error) {
+  console.error(
+    "macro:",
+    error.message
+  );
+}
+
+// Make sure the AI response has a valid structure.
+if (
+  !brief.macro ||
+  typeof brief.macro !==
+    "object"
+) {
+  brief.macro = {};
+}
+
+if (
+  !Array.isArray(
+    brief.macro.sections
+  )
+) {
+  brief.macro.sections = [];
+}
+
+// Replace the AI-generated pulse with direct data.
+try {
+  brief.macro.pulse =
+    await fetchMarketPulse();
+} catch (error) {
+  console.error(
+    "market pulse:",
+    error.message
+  );
+
+  brief.macro.pulse = [
+    {
+      key: "treasury10Y",
+      label: "10Y UST",
+      value: "—",
+    },
+    {
+      key: "sofr",
+      label: "SOFR",
+      value: "—",
+    },
+    {
+      key: "cmbsSpreads",
+      label: "CMBS SPREADS",
+      value: "—",
+    },
+    {
+      key: "capRates",
+      label: "CAP RATES",
+      value: "—",
+    },
+  ];
+}
 
   if (sub.geo || sub.market) {
     try {
