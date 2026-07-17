@@ -15,6 +15,10 @@ import {
   initializeDatabase,
 } from "./db.js";
 
+import {
+  fetchMarketPulse,
+} from "./marketData.js";
+
 const __dirname = path.dirname(
   fileURLToPath(import.meta.url)
 );
