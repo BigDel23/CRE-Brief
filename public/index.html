@@ -712,25 +712,129 @@ background-attachment:fixed;
 }
 
 
+
+  /* ── Bloomberg-style top-line terminal ───────── */
+  .terminal-head{
+    display:grid;
+    grid-template-columns:minmax(220px,.9fr) minmax(560px,2.4fr) auto;
+    align-items:stretch;
+    min-height:132px;
+  }
+  .terminal-brand{
+    padding:16px 18px;border-right:1px solid var(--line-soft);
+    display:flex;flex-direction:column;justify-content:center;min-width:0;
+    background:linear-gradient(145deg,rgba(242,180,65,.055),transparent 55%);
+  }
+  .terminal-kicker{
+    font-family:var(--data);font-size:9px;letter-spacing:.16em;
+    color:var(--pencil);margin-bottom:8px;white-space:nowrap;
+  }
+  .terminal-kicker span{color:var(--dimmer)}
+  .market-console{
+    min-width:0;display:flex;flex-direction:column;background:rgba(3,17,27,.32);
+  }
+  .console-bar{
+    height:30px;padding:0 12px;display:flex;align-items:center;
+    justify-content:space-between;gap:12px;border-bottom:1px solid var(--line-soft);
+    font-family:var(--data);font-size:9px;letter-spacing:.13em;color:var(--pencil);
+  }
+  .console-hint{color:var(--dimmer);font-size:8px;letter-spacing:.09em;text-align:right}
+  .market-snapshot{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex:1}
+  .market-line{
+    appearance:none;border:0;border-left:1px solid var(--line-soft);
+    background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,0));
+    color:var(--print);padding:12px;text-align:left;min-width:0;
+    display:grid;grid-template-rows:auto auto 1fr;gap:4px;position:relative;
+    overflow:hidden;cursor:pointer;
+    transition:background .16s ease,box-shadow .16s ease,transform .16s ease;
+  }
+  .market-line:first-child{border-left:0}
+  .market-line::after{
+    content:"›";position:absolute;right:9px;top:8px;font-family:var(--data);
+    color:var(--dimmer);opacity:.75;transition:transform .16s ease,color .16s ease;
+  }
+  .market-line:hover,.market-line:focus-visible{
+    background:rgba(242,180,65,.055);
+    box-shadow:inset 0 -2px 0 rgba(242,180,65,.72);
+    transform:translateY(-1px);
+  }
+  .market-line:hover::after,.market-line:focus-visible::after{
+    color:var(--pencil);transform:translateX(2px);
+  }
+  .market-code{
+    font-family:var(--data);font-size:9px;letter-spacing:.13em;color:var(--dimmer);
+    text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    padding-right:12px;
+  }
+  .market-value{
+    font-family:var(--data);font-size:18px;font-weight:600;line-height:1.1;
+    letter-spacing:-.03em;color:#f7fbfd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .market-note{
+    font-family:var(--data);font-size:9.5px;color:var(--dim);line-height:1.35;
+    align-self:end;display:-webkit-box;-webkit-line-clamp:2;
+    -webkit-box-orient:vertical;overflow:hidden;
+  }
+  .market-line[data-tone="positive"] .market-value{color:#7FD1AE}
+  .market-line[data-tone="negative"] .market-value{color:#F08A72}
+  .market-line[data-tone="mixed"] .market-value{color:var(--pencil)}
+  .market-line[data-tone="neutral"] .market-value{color:#F5F9FC}
+  .brief-status{display:flex;flex-direction:column;gap:2px;min-width:130px}
+  .brief-status strong{
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;font-size:12px;
+  }
+  .brief-status span{
+    font-family:var(--data);font-size:8.5px;color:var(--dimmer);line-height:1.35;
+  }
+  .section-flash{animation:sectionFlash 1.35s ease}
+  @keyframes sectionFlash{
+    0%{box-shadow:0 0 0 1px rgba(242,180,65,.95),0 0 0 5px rgba(242,180,65,.16),0 28px 65px rgba(0,0,0,.48)}
+    100%{box-shadow:0 22px 55px rgba(0,0,0,.42),0 6px 16px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.045)}
+  }
+  @media (max-width:1040px){
+    .terminal-head{grid-template-columns:230px 1fr}
+    .tb-actions{grid-column:1/-1;border-left:0;border-top:1px solid var(--line-soft);justify-content:flex-end}
+  }
+  @media (max-width:760px){
+    .terminal-head{display:block}
+    .terminal-brand{border-right:0;border-bottom:1px solid var(--line-soft)}
+    .market-snapshot{grid-template-columns:1fr 1fr}
+    .market-line:nth-child(odd){border-left:0}
+    .market-line:nth-child(n+3){border-top:1px solid var(--line-soft)}
+    .console-hint{display:none}
+    .tb-actions{display:flex}
+  }
+  @media (max-width:460px){
+    .market-snapshot{grid-template-columns:1fr}
+    .market-line{border-left:0;border-top:1px solid var(--line-soft)}
+    .market-line:first-child{border-top:0}
+    .market-note{-webkit-line-clamp:1}
+  }
+
 </style>
 
 <div id="cre-root">
   <div class="sheet">
-    <div class="titleblock">
-      <div class="tb-cell">
+    <div class="titleblock terminal-head">
+      <div class="terminal-brand">
+        <div class="terminal-kicker">CRE <span>//</span> MARKET INTELLIGENCE</div>
         <div class="tb-title">CRE Daily Brief</div>
         <div class="tb-sub" id="sub">Macro tape + named firms</div>
       </div>
-      <div class="tb-cell"><span class="tb-label">10Y UST</span><div class="tb-value" id="p0">—</div><div class="tb-note" id="p0n"></div></div>
-      <div class="tb-cell"><span class="tb-label">SOFR</span><div class="tb-value" id="p1">—</div><div class="tb-note" id="p1n"></div></div>
-      <div class="tb-cell"><span class="tb-label">CMBS spreads</span><div class="tb-value" id="p2">—</div><div class="tb-note" id="p2n"></div></div>
-      <div class="tb-cell"><span class="tb-label">Cap rates</span><div class="tb-value" id="p3">—</div><div class="tb-note" id="p3n"></div></div>
+
+      <div class="market-console">
+        <div class="console-bar">
+          <span>MARKET SNAPSHOT</span>
+          <span class="console-hint">SELECT A LINE TO OPEN SUPPORTING ANALYSIS</span>
+        </div>
+        <div class="market-snapshot" id="marketSnapshot" aria-label="Market snapshot"></div>
+      </div>
+
       <div class="tb-actions">
         <div class="brief-status">
           <strong>Today’s Brief</strong>
           <span>Updates automatically at 8:00 AM ET</span>
         </div>
-        
         <button class="btn-ghost" id="notify">Notify</button>
         <button class="btn-ghost" id="copy">Copy</button>
       </div>
@@ -1024,7 +1128,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
         await save(KEY_WATCH,state.watchlist); render();
       };
     });
-    wireLocal(); wireWatch(); renderRail();
+    wireLocal(); wireWatch(); renderRail(); renderPulse();
   }
 
   function localHTML(){
@@ -1128,13 +1232,107 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     inp.onkeydown = e => { if(e.key==="Enter") add(); };
   }
 
+  function normalizePulse(raw){
+    const fallback = [
+      {key:"treasury10Y",label:"10Y UST",value:"—",note:"Awaiting market data",targetSection:"rates-debt"},
+      {key:"sofr",label:"SOFR",value:"—",note:"Awaiting market data",targetSection:"rates-debt"},
+      {key:"cmbs",label:"CMBS",value:"—",note:"Awaiting credit signal",targetSection:"rates-debt"},
+      {key:"capRates",label:"CAP RATES",value:"—",note:"Awaiting pricing signal",targetSection:"capital-markets"}
+    ];
+
+    const source = raw || [];
+
+    if(Array.isArray(source)){
+      return fallback.map((base,i)=>{
+        const item = source[i] || {};
+        return {
+          ...base,
+          ...item,
+          label:item.label || base.label,
+          note:item.note || item.detail || base.note,
+          targetSection:item.targetSection || base.targetSection
+        };
+      });
+    }
+
+    const pick = (keys,base)=>{
+      const item = keys.map(k=>source?.[k]).find(Boolean) || {};
+      return {
+        ...base,
+        ...item,
+        label:item.label || base.label,
+        note:item.note || item.detail || base.note,
+        targetSection:item.targetSection || base.targetSection
+      };
+    };
+
+    return [
+      pick(["treasury10Y","tenYear","ust10Y"],fallback[0]),
+      pick(["sofr"],fallback[1]),
+      pick(["cmbs"],fallback[2]),
+      pick(["capRates","caprates"],fallback[3])
+    ];
+  }
+
+  function pulseTone(value){
+    const v = String(value||"").toUpperCase();
+    if(/TIGHTEN|FALLING|DOWN|LOWER|IMPROV/.test(v)) return "positive";
+    if(/WIDEN|RISING|UP|HIGHER|WEAK/.test(v)) return "negative";
+    if(/MIXED|VOLATILE/.test(v)) return "mixed";
+    return "neutral";
+  }
+
+  function pulseTarget(item){
+    const key = item?.targetSection || "capital-markets";
+    const aliases = {
+      "rates-debt":"macro-rates-debt",
+      "rates & debt":"macro-rates-debt",
+      "capital-markets":"macro-capital-markets",
+      "capital markets":"macro-capital-markets",
+      "office":"macro-office",
+      "industrial-data-centers":"macro-industrial-data-centers",
+      "industrial & data centers":"macro-industrial-data-centers",
+      "multifamily-retail":"macro-multifamily-retail",
+      "multifamily & retail":"macro-multifamily-retail"
+    };
+    return aliases[String(key).toLowerCase()] || "macro-capital-markets";
+  }
+
+  function openPulseTarget(item){
+    const target = document.getElementById(pulseTarget(item));
+    if(!target) return;
+    target.scrollIntoView({behavior:"smooth",block:"start"});
+    target.classList.remove("section-flash");
+    void target.offsetWidth;
+    target.classList.add("section-flash");
+    setTimeout(()=>target.classList.remove("section-flash"),1400);
+  }
+
   function renderPulse(){
-    const labels = ["10Y UST","SOFR","CMBS spreads","Cap rates"];
-    (state.pulse||[]).forEach((p,i)=>{
-      if(i>3) return;
-      $("p"+i).textContent = p.value || "—";
-      $("p"+i+"n").textContent = p.note || "";
-    });
+    const data = normalizePulse(state.pulse);
+    state.pulse = data;
+
+    const snapshot = $("marketSnapshot");
+    if(snapshot){
+      snapshot.innerHTML = data.map((item,i)=>`
+        <button
+          type="button"
+          class="market-line"
+          data-pulse-index="${i}"
+          data-tone="${pulseTone(item.value)}"
+          aria-label="Open supporting analysis for ${esc(item.label)}"
+        >
+          <span class="market-code">${esc(item.label)}</span>
+          <span class="market-value">${esc(item.value || "—")}</span>
+          <span class="market-note">${esc(item.note || item.detail || "")}</span>
+        </button>
+      `).join("");
+
+      snapshot.querySelectorAll("[data-pulse-index]").forEach(button=>{
+        button.onclick = ()=>openPulseTarget(data[Number(button.dataset.pulseIndex)]);
+      });
+    }
+
     $("sub").textContent = dateLong;
   }
 
@@ -1156,9 +1354,11 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
   /* ── copy out ────────────────────────────── */
   $("copy").onclick = ()=>{
     let t = "CRE DAILY BRIEF — " + dateLong + "\n\n";
-    if(state.pulse?.length){
-      t += "TAPE: " + ["10Y UST","SOFR","CMBS","Cap rates"]
-        .map((l,i)=> l+" "+(state.pulse[i]?.value||"—")+" ("+(state.pulse[i]?.note||"")+")").join(" | ") + "\n\n";
+    const pulse = normalizePulse(state.pulse);
+    if(pulse.length){
+      t += "TAPE: " + pulse
+        .map(p=>p.label+" "+(p.value||"—")+" ("+(p.note||p.detail||"")+")")
+        .join(" | ") + "\n\n";
     }
     const L = state.local;
     if(L.items?.length){
@@ -1192,7 +1392,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
   window.__creState = () => state;
   window.__creLoad = async brief => {
   state.macro = brief.macro || null;
-  state.pulse = brief.pulse || brief.macro?.pulse || [];
+  state.pulse = brief.marketPulse || brief.pulse || brief.macro?.pulse || [];
   state.firms = brief.firms || {};
 
   if (brief.local) {
@@ -1205,6 +1405,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     date: brief.date || dateISO,
     macro: state.macro,
     pulse: state.pulse,
+    marketPulse: state.pulse,
     firms: state.firms,
     local: state.local
   });
@@ -1226,7 +1427,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
 // It stays visible until the server provides a newer one.
 if (b) {
   state.macro = b.macro || null;
-  state.pulse = b.pulse || b.macro?.pulse || [];
+  state.pulse = b.marketPulse || b.pulse || b.macro?.pulse || [];
   state.firms = b.firms || {};
 
   if (b.local) {
