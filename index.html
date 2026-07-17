@@ -913,17 +913,52 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     setLabel("No push here");
   }
 
-  // If the cron already built today's brief, show that instead of re-searching.
-  window.addEventListener("load", async () => {
-    const id = localStorage.getItem(KEY_SUB);
-    if(!id) return;
-    try{
-      const res = await fetch("/api/brief/" + id);
-      if(!res.ok) return;
+ // Load the newest available brief on every browser.
+//
+// A subscribed device first requests its personalized brief.
+// Browsers without a subscription ID request the newest
+// stored brief instead.
+window.addEventListener("load", async () => {
+  const id = localStorage.getItem(KEY_SUB);
+
+  const urls = id
+    ? [
+        "/api/brief/" + encodeURIComponent(id),
+        "/api/brief/latest"
+      ]
+    : [
+        "/api/brief/latest"
+      ];
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache"
+        }
+      });
+
+      if (!res.ok) {
+        continue;
+      }
+
       const brief = await res.json();
-      if(brief.date === new Date().toISOString().slice(0,10) && window.__creLoad) window.__creLoad(brief);
-    }catch(e){}
-  });
+
+      if (brief && window.__creLoad) {
+        await window.__creLoad(brief);
+        return;
+      }
+    } catch (error) {
+      console.error(
+        "Could not load brief from " + url + ":",
+        error
+      );
+    }
+  }
+
+  console.warn("No stored brief was available.");
+});
 })();
 </script>
 </body>
