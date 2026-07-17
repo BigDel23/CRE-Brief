@@ -820,6 +820,282 @@ background-attachment:fixed;
     .market-note{-webkit-line-clamp:1}
   }
 
+
+/* ─────────────────────────────────────────────
+   TWO-COLUMN INFORMATION HIERARCHY
+   Keeps all existing data, API, storage, push, and watchlist behavior.
+───────────────────────────────────────────── */
+
+.sheet{
+  max-width:1540px;
+}
+
+.terminal-head{
+  grid-template-columns:minmax(220px,.75fr) minmax(620px,2.65fr) auto;
+  min-height:108px;
+}
+
+.terminal-brand{
+  padding:13px 16px;
+}
+
+.console-bar{
+  height:26px;
+}
+
+.market-line{
+  padding:9px 11px;
+}
+
+.market-value{
+  font-size:16px;
+}
+
+.tb-actions{
+  padding:10px;
+}
+
+.plan{
+  grid-template-columns:190px minmax(0,1fr);
+  gap:14px;
+  margin-top:14px;
+}
+
+.rail{
+  top:14px;
+}
+
+.col{
+  display:grid;
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  gap:14px;
+  align-items:start;
+}
+
+.col > .sect-rule,
+.col > .add-panel,
+.col > .empty{
+  grid-column:1/-1;
+}
+
+.col > .sect-rule{
+  margin-top:4px;
+  margin-bottom:-2px;
+}
+
+.hero-card{
+  grid-column:span 8;
+  min-height:286px;
+}
+
+.local-card{
+  grid-column:span 4;
+  min-height:286px;
+}
+
+.macro-card,
+.firm-card{
+  grid-column:span 6;
+}
+
+.hero-body{
+  padding:16px;
+}
+
+.hero-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 164px;
+  gap:18px;
+  align-items:start;
+}
+
+.hero-lede{
+  font-family:var(--display);
+  font-size:clamp(25px,2.1vw,38px);
+  font-weight:600;
+  line-height:1.06;
+  letter-spacing:.01em;
+  max-width:780px;
+}
+
+.hero-lede em{
+  color:var(--pencil);
+  font-style:normal;
+}
+
+.hero-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.hero-stat{
+  border:1px solid var(--line-soft);
+  background:rgba(255,255,255,.018);
+  padding:10px;
+  min-height:70px;
+}
+
+.hero-stat strong{
+  display:block;
+  font-family:var(--display);
+  color:var(--pencil);
+  font-size:25px;
+  line-height:1;
+  margin-bottom:5px;
+}
+
+.hero-stat span{
+  display:block;
+  color:var(--dimmer);
+  font-family:var(--data);
+  font-size:8.5px;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+
+.hero-list{
+  margin-top:14px;
+  border-top:1px solid var(--line-soft);
+}
+
+.hero-story{
+  display:grid;
+  grid-template-columns:32px minmax(0,1fr) auto;
+  gap:11px;
+  padding:11px 0;
+  border-bottom:1px solid var(--line-soft);
+}
+
+.hero-story:last-child{
+  border-bottom:0;
+}
+
+.hero-rank{
+  font-family:var(--data);
+  color:var(--pencil);
+  font-size:9px;
+  padding-top:3px;
+}
+
+.hero-story h4{
+  font-size:14px;
+  line-height:1.3;
+  margin-bottom:3px;
+}
+
+.hero-story p{
+  color:var(--dim);
+  font-size:11.5px;
+  line-height:1.45;
+}
+
+.hero-source{
+  align-self:start;
+  font-family:var(--data);
+  font-size:8.5px;
+  color:var(--dimmer);
+  white-space:nowrap;
+}
+
+.local-card .locbar{
+  grid-template-columns:1fr;
+}
+
+.local-card .fund{
+  grid-template-columns:1fr 1fr;
+}
+
+.local-card .fund > div:nth-child(3){
+  border-left:0;
+}
+
+.local-card .fund > div:nth-child(n+3){
+  border-top:1px solid var(--line-soft);
+}
+
+.local-card .item{
+  padding:12px;
+}
+
+.add-panel{
+  display:grid;
+  grid-template-columns:minmax(150px,.3fr) minmax(0,1fr);
+  gap:12px;
+  align-items:end;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:linear-gradient(145deg,rgba(14,48,69,.94),rgba(7,29,43,.92));
+}
+
+.add-panel .sect-rule{
+  margin:0;
+  align-self:center;
+}
+
+.add-panel .add{
+  margin:0;
+}
+
+@media (max-width:1120px){
+  .terminal-head{
+    grid-template-columns:220px 1fr;
+  }
+
+  .hero-card,
+  .local-card,
+  .macro-card,
+  .firm-card{
+    grid-column:1/-1;
+  }
+
+  .hero-card,
+  .local-card{
+    min-height:auto;
+  }
+}
+
+@media (max-width:860px){
+  .plan{
+    grid-template-columns:1fr;
+  }
+
+  .col{
+    grid-template-columns:1fr;
+  }
+
+  .col > *,
+  .hero-card,
+  .local-card,
+  .macro-card,
+  .firm-card{
+    grid-column:1;
+  }
+
+  .hero-grid{
+    grid-template-columns:1fr;
+  }
+
+  .add-panel{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:560px){
+  .hero-story{
+    grid-template-columns:24px minmax(0,1fr);
+  }
+
+  .hero-source{
+    display:none;
+  }
+
+  .hero-stats{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
 </style>
 
 <div id="cre-root">
@@ -1077,41 +1353,109 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     </article>`;
   }
 
+  function heroHTML(){
+    const macroItems = (state.macro?.sections || []).flatMap(section =>
+      (section.items || []).map(item => ({
+        ...item,
+        group: section.title
+      }))
+    );
+
+    const firmItems = state.watchlist.flatMap(firm =>
+      (state.firms[firm]?.items || []).map(item => ({
+        ...item,
+        group: firm
+      }))
+    );
+
+    const localItems = (state.local.items || []).map(item => ({
+      ...item,
+      group: state.local.market || "Local market"
+    }));
+
+    const allItems = [...macroItems, ...firmItems, ...localItems];
+    const top = allItems.slice(0,3);
+    const activeFirms = state.watchlist.filter(firm => state.firms[firm]?.items?.length).length;
+    const majorMoves = macroItems.length;
+    const marketName = state.local.market || state.local.override || "your market";
+
+    const lede = allItems.length
+      ? `The day’s highest-priority CRE intelligence across <em>macro, ${esc(marketName)}, and named firms</em>.`
+      : `Your daily hierarchy will surface <em>the most important market moves first</em> when the brief arrives.`;
+
+    const stories = top.length
+      ? top.map((item,index)=>`
+          <article class="hero-story">
+            <span class="hero-rank">${String(index+1).padStart(2,"0")}</span>
+            <div>
+              <h4>${esc(item.headline)}</h4>
+              <p>${esc(item.detail || item.why || "")}</p>
+            </div>
+            <span class="hero-source">${esc(item.group || "")}</span>
+          </article>
+        `).join("")
+      : `<div class="quiet">No stories have loaded yet. The scheduled brief will populate this priority view automatically.</div>`;
+
+    return `<section class="card hero-card" id="today-brief">
+      <div class="card-head">
+        <h3>Today’s Brief</h3>
+        <span class="meta">Priority intelligence</span>
+      </div>
+      <div class="hero-body">
+        <div class="hero-grid">
+          <div class="hero-lede">${lede}</div>
+          <div class="hero-stats">
+            <div class="hero-stat"><strong>${allItems.length}</strong><span>Total stories</span></div>
+            <div class="hero-stat"><strong>${majorMoves}</strong><span>Macro moves</span></div>
+            <div class="hero-stat"><strong>${activeFirms}</strong><span>Active firms</span></div>
+            <div class="hero-stat"><strong>${state.local.items?.length || 0}</strong><span>Local items</span></div>
+          </div>
+        </div>
+        <div class="hero-list">${stories}</div>
+      </div>
+    </section>`;
+  }
+
   /* ── main render ─────────────────────────── */
   function render(){
     const col = $("col");
 
     if(!state.macro && !Object.keys(state.firms).length){
-  col.innerHTML = `<div class="empty">
-    <h3>Today’s brief is not ready yet</h3>
-    <p>The brief updates automatically at 8:00 AM ET each weekday.</p>
-  </div>` + watchHTML();
+      col.innerHTML = heroHTML() + `<div class="empty">
+        <h3>Today’s brief is not ready yet</h3>
+        <p>The brief updates automatically at 8:00 AM ET each weekday.</p>
+      </div>` + watchHTML();
 
-  wireWatch();
-  renderRail();
-  return;
-}
-    let html = localHTML();
+      wireWatch();
+      renderRail();
+      renderPulse();
+      return;
+    }
+
+    let html = heroHTML();
+    html += localHTML();
+
     html += `<div class="sect-rule"><h2>Macro</h2><span>${MACRO_SECTIONS.length} sections</span></div>`;
 
     if(state.macroErr){
-      html += `<div class="card"><div class="err">${esc(state.macroErr)} Try pulling again.</div></div>`;
+      html += `<div class="card macro-card"><div class="err">${esc(state.macroErr)} Try pulling again.</div></div>`;
     } else if(!state.macro){
-      html += MACRO_SECTIONS.map(s=>`<section class="card" id="macro-${slug(s)}">
+      html += MACRO_SECTIONS.map(s=>`<section class="card macro-card" id="macro-${slug(s)}">
         <div class="card-head"><h3>${esc(s)}</h3></div>
         <div class="pending">Searching</div></section>`).join("");
     } else {
       html += MACRO_SECTIONS.map(s=>{
         const sec = state.macro.sections?.find(x=>x.title===s);
         const items = sec?.items||[];
-        return `<section class="card" id="macro-${slug(s)}">
+        return `<section class="card macro-card" id="macro-${slug(s)}">
           <div class="card-head"><h3>${esc(s)}</h3><span class="meta">${items.length} item${items.length===1?"":"s"}</span></div>
           ${items.length ? items.map(i=>itemHTML(i,false)).join("") : `<div class="quiet">Nothing moved here today.</div>`}
         </section>`;
       }).join("");
     }
 
-    html += `<div class="sect-rule"><h2>Watchlist</h2><span>${state.watchlist.length} firms</span></div>`;
+    html += `<div class="sect-rule"><h2>Company news</h2><span>${state.watchlist.length} firms</span></div>`;
+
     html += state.watchlist.map(f=>{
       const r = state.firms[f];
       let body;
@@ -1119,7 +1463,8 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
       else if(r.status==="error") body = `<div class="err">${esc(r.msg)}</div>`;
       else if(!r.items.length) body = `<div class="quiet">No news in the past 7 days.</div>`;
       else body = r.items.map(i=>itemHTML(i,true)).join("");
-      return `<section class="card" id="firm-${slug(f)}">
+
+      return `<section class="card firm-card" id="firm-${slug(f)}">
         <div class="card-head">
           <h3>${esc(f)}</h3>
           <span class="meta">${r&&r.items?r.items.length+" item"+(r.items.length===1?"":"s"):""}</span>
@@ -1134,10 +1479,15 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
       b.onclick = async ()=>{
         state.watchlist = state.watchlist.filter(f=>f!==b.dataset.drop);
         delete state.firms[b.dataset.drop];
-        await save(KEY_WATCH,state.watchlist); render();
+        await save(KEY_WATCH,state.watchlist);
+        render();
       };
     });
-    wireLocal(); wireWatch(); renderRail(); renderPulse();
+
+    wireLocal();
+    wireWatch();
+    renderRail();
+    renderPulse();
   }
 
   function localHTML(){
@@ -1169,9 +1519,11 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
         <div class="tb-note">${esc(f.note||"")}</div>
       </div>`).join("")}</div>` : "";
 
-    return `<div class="sect-rule"><h2>Site</h2><span>at grade</span></div>
-      <section class="card" id="local">
-        <div class="card-head"><h3>${esc(title)}</h3>${sub}</div>
+    return `<section class="card local-card" id="local">
+        <div class="card-head">
+          <h3>${esc(title)}</h3>
+          ${sub || `<span class="meta">Local market</span>`}
+        </div>
         ${bar}${funds}${body}
       </section>`;
   }
@@ -1220,11 +1572,13 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
 }
 
   function watchHTML(){
-    return `<div class="sect-rule"><h2>Add a firm</h2></div>
+    return `<section class="add-panel">
+      <div class="sect-rule"><h2>Add a firm</h2><span>Expand your watchlist</span></div>
       <div class="add">
         <input id="firmin" placeholder="Brookfield, Related, Tishman Speyer…" autocomplete="off">
         <button class="btn" id="firmadd">Add floor</button>
-      </div>`;
+      </div>
+    </section>`;
   }
   function wireWatch(){
     const inp = $("firmin"), btn = $("firmadd");
