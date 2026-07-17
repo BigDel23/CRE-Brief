@@ -1,7 +1,6 @@
 import express from "express";
 import webpush from "web-push";
 import cron from "node-cron";
-import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -11,8 +10,15 @@ import {
   watchlistPrompt,
 } from "./prompts.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB = path.join(__dirname, "data.json");
+import {
+  pool,
+  initializeDatabase,
+} from "./db.js";
+
+const __dirname = path.dirname(
+  fileURLToPath(import.meta.url)
+);
+
 const PORT = process.env.PORT || 3000;
 
 // ── config ────────────────────────────────────────────────
@@ -21,7 +27,7 @@ const {
   VAPID_PUBLIC_KEY,
   VAPID_PRIVATE_KEY,
   VAPID_SUBJECT = "mailto:you@example.com",
-  BRIEF_CRON = "30 6 * * 1-5",
+  BRIEF_CRON = "0 8 * * 1-5",
   BRIEF_TZ = "America/New_York",
 } = process.env;
 
@@ -42,45 +48,35 @@ webpush.setVapidDetails(
   VAPID_PRIVATE_KEY
 );
 
-// ── tiny JSON store ───────────────────────────────────────
-async function read() {
-  try {
-    return JSON.parse(await fs.readFile(DB, "utf8"));
-  } catch {
-    return { subs: {} };
-  }
-}
-
-async function write(db) {
-  await fs.writeFile(DB, JSON.stringify(db, null, 2));
-}
-
 // ── model ─────────────────────────────────────────────────
 async function ask(prompt) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5",
-      max_tokens: 1500,
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      tools: [
-        {
-          type: "web_search_20250305",
-          name: "web_search",
-        },
-      ],
-    }),
-  });
+  const res = await fetch(
+    "https://api.anthropic.com/v1/messages",
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5",
+        max_tokens: 1500,
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        tools: [
+          {
+            type: "web_search_20250305",
+            name: "web_search",
+          },
+        ],
+      }),
+    }
+  );
 
   if (!res.ok) {
     throw new Error(
@@ -97,7 +93,7 @@ async function ask(prompt) {
 }
 
 function parseJSON(text) {
-  const cleaned = text
+  const cleaned = String(text || "")
     .replace(/```json/gi, "")
     .replace(/```/g, "")
     .trim();
@@ -105,17 +101,25 @@ function parseJSON(text) {
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
 
-  if (start === -1 || end === -1 || end <= start) {
+  if (
+    start === -1 ||
+    end === -1 ||
+    end <= start
+  ) {
     throw new Error("No JSON in response");
   }
 
-  return JSON.parse(cleaned.slice(start, end + 1));
+  return JSON.parse(
+    cleaned.slice(start, end + 1)
+  );
 }
 
 // ── brief generation ──────────────────────────────────────
 async function buildBrief(sub) {
   const brief = {
-    date: new Date().toISOString().slice(0, 10),
+    date: new Date()
+      .toISOString()
+      .slice(0, 10),
     generatedAt: Date.now(),
     macro: {
       pulse: [],
@@ -129,13 +133,21 @@ async function buildBrief(sub) {
       await ask(macroPrompt())
     );
   } catch (error) {
-    console.error("macro:", error.message);
+    console.error(
+      "macro:",
+      error.message
+    );
   }
 
   if (sub.geo || sub.market) {
     try {
       brief.local = parseJSON(
-        await ask(localPrompt(sub.geo, sub.market))
+        await ask(
+          localPrompt(
+            sub.geo,
+            sub.market
+          )
+        )
       );
     } catch (error) {
       brief.local = {
@@ -143,13 +155,20 @@ async function buildBrief(sub) {
         fundamentals: [],
       };
 
-      console.error("local:", error.message);
+      console.error(
+        "local:",
+        error.message
+      );
     }
   }
 
-  const watchlist = Array.isArray(sub.watchlist)
+  const watchlist = Array.isArray(
+    sub.watchlist
+  )
     ? sub.watchlist
-        .map(firm => String(firm).trim())
+        .map(firm =>
+          String(firm).trim()
+        )
         .filter(Boolean)
     : [];
 
@@ -166,28 +185,39 @@ async function buildBrief(sub) {
   if (watchlist.length) {
     try {
       const result = parseJSON(
-        await ask(watchlistPrompt(watchlist))
+        await ask(
+          watchlistPrompt(watchlist)
+        )
       );
 
-      const returnedFirms = Array.isArray(result.firms)
-        ? result.firms
-        : [];
+      const returnedFirms =
+        Array.isArray(result.firms)
+          ? result.firms
+          : [];
 
-      for (const returnedFirm of returnedFirms) {
+      for (
+        const returnedFirm
+        of returnedFirms
+      ) {
         if (
           !returnedFirm ||
-          typeof returnedFirm.name !== "string"
+          typeof returnedFirm.name !==
+            "string"
         ) {
           continue;
         }
 
-        const returnedName = returnedFirm.name
-          .trim()
-          .toLowerCase();
+        const returnedName =
+          returnedFirm.name
+            .trim()
+            .toLowerCase();
 
-        const originalName = watchlist.find(
-          firm => firm.toLowerCase() === returnedName
-        );
+        const originalName =
+          watchlist.find(
+            firm =>
+              firm.toLowerCase() ===
+              returnedName
+          );
 
         if (!originalName) {
           continue;
@@ -195,8 +225,13 @@ async function buildBrief(sub) {
 
         brief.firms[originalName] = {
           status: "done",
-          items: Array.isArray(returnedFirm.items)
-            ? returnedFirm.items.slice(0, 2)
+          items: Array.isArray(
+            returnedFirm.items
+          )
+            ? returnedFirm.items.slice(
+                0,
+                2
+              )
             : [],
         };
       }
@@ -226,7 +261,8 @@ function summarize(brief) {
     brief.firms || {}
   ).reduce(
     (count, firm) =>
-      count + (firm.items?.length || 0),
+      count +
+      (firm.items?.length || 0),
     0
   );
 
@@ -243,21 +279,26 @@ function summarize(brief) {
   }
 
   if (firmHits) {
-    bits.push(`${firmHits} on your watchlist`);
+    bits.push(
+      `${firmHits} on your watchlist`
+    );
   }
 
   if (localHits) {
     bits.push(
       `${localHits} in ${
-        brief.local?.market || "your market"
+        brief.local?.market ||
+        "your market"
       }`
     );
   }
 
   const lead =
-    brief.local?.items?.[0]?.headline ||
+    brief.local?.items?.[0]
+      ?.headline ||
     brief.macro?.sections?.find(
-      section => section.items?.length
+      section =>
+        section.items?.length
     )?.items?.[0]?.headline ||
     "Tap to read the stack.";
 
@@ -269,74 +310,148 @@ function summarize(brief) {
   };
 }
 
+// Prevent the same server process from starting a second
+// generation while the first one is still running.
+let dailyRunActive = false;
+
 async function runDaily() {
-  const db = await read();
-  const entries = Object.entries(db.subs);
+  if (dailyRunActive) {
+    console.log(
+      "[cron] skipped because a run is already active"
+    );
+    return;
+  }
 
-  console.log(
-    `[cron] ${new Date().toISOString()} — ${
-      entries.length
-    } subscriber(s)`
-  );
+  dailyRunActive = true;
 
-  for (const [id, sub] of entries) {
-    try {
-      const brief = await buildBrief(sub);
-      sub.brief = brief;
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        subscription,
+        watchlist,
+        geo,
+        market
+      FROM subscribers
+      ORDER BY updated_at ASC
+    `);
 
-      const { title, body } =
-        summarize(brief);
+    const subscribers = result.rows;
 
-      await webpush.sendNotification(
-        sub.subscription,
-        JSON.stringify({
-          title,
-          body,
-          date: brief.date,
-        })
-      );
+    console.log(
+      `[cron] ${new Date().toISOString()} — ${
+        subscribers.length
+      } subscriber(s)`
+    );
 
-      console.log(
-        `[cron] pushed to ${id.slice(
-          0,
-          12
-        )}… — ${title}`
-      );
-    } catch (error) {
-      if (
-        error.statusCode === 404 ||
-        error.statusCode === 410
-      ) {
-        delete db.subs[id];
+    for (const sub of subscribers) {
+      const {
+        id,
+        subscription,
+        watchlist,
+        geo,
+        market,
+      } = sub;
+
+      try {
+        const brief = await buildBrief({
+          watchlist,
+          geo,
+          market,
+        });
+
+        // Save the full brief before attempting the push.
+        // It remains stored until the next scheduled run
+        // replaces it.
+        await pool.query(
+          `
+            UPDATE subscribers
+            SET
+              brief = $1::jsonb,
+              brief_generated_at = NOW()
+            WHERE id = $2
+          `,
+          [
+            JSON.stringify(brief),
+            id,
+          ]
+        );
 
         console.log(
-          `[cron] dropped dead subscription ${id.slice(
+          `[cron] saved brief for ${id.slice(
             0,
             12
           )}…`
         );
-      } else {
+
+        const { title, body } =
+          summarize(brief);
+
+        try {
+          await webpush.sendNotification(
+            subscription,
+            JSON.stringify({
+              title,
+              body,
+              date: brief.date,
+            })
+          );
+
+          console.log(
+            `[cron] pushed to ${id.slice(
+              0,
+              12
+            )}… — ${title}`
+          );
+        } catch (pushError) {
+          if (
+            pushError.statusCode ===
+              404 ||
+            pushError.statusCode === 410
+          ) {
+            await pool.query(
+              `
+                DELETE FROM subscribers
+                WHERE id = $1
+              `,
+              [id]
+            );
+
+            console.log(
+              `[cron] dropped dead subscription ${id.slice(
+                0,
+                12
+              )}…`
+            );
+          } else {
+            console.error(
+              `[cron] brief saved, but push failed for ${id.slice(
+                0,
+                12
+              )}…:`,
+              pushError.message
+            );
+          }
+        }
+      } catch (error) {
         console.error(
           `[cron] ${id.slice(
             0,
             12
-          )}… failed:`,
+          )}… generation failed:`,
           error.message
         );
       }
     }
+  } catch (error) {
+    console.error(
+      "[cron] unable to load subscribers:",
+      error
+    );
+  } finally {
+    dailyRunActive = false;
   }
-
-  await write(db);
 }
-
-cron.schedule(BRIEF_CRON, runDaily, {
-  timezone: BRIEF_TZ,
-});
-
-console.log(
-  `Daily brief scheduled: "${BRIEF_CRON}" (${BRIEF_TZ})`
-);
 
 // ── API ───────────────────────────────────────────────────
 const app = express();
@@ -354,7 +469,9 @@ app.use(
 );
 
 const idOf = subscription =>
-  Buffer.from(subscription.endpoint)
+  Buffer.from(
+    subscription.endpoint
+  )
     .toString("base64url")
     .slice(-40);
 
@@ -368,60 +485,149 @@ app.get("/api/key", (_req, res) => {
 app.post(
   "/api/subscribe",
   async (req, res) => {
-    const {
-      subscription,
-      watchlist,
-      geo,
-      market,
-    } = req.body || {};
+    try {
+      const {
+        subscription,
+        watchlist,
+        geo,
+        market,
+      } = req.body || {};
 
-    if (!subscription?.endpoint) {
-      return res.status(400).json({
+      if (!subscription?.endpoint) {
+        return res.status(400).json({
+          error:
+            "No push subscription sent.",
+        });
+      }
+
+      const id =
+        idOf(subscription);
+
+      const cleanWatchlist =
+        Array.isArray(watchlist)
+          ? watchlist
+              .map(firm =>
+                String(firm).trim()
+              )
+              .filter(Boolean)
+          : [];
+
+      /*
+       * Updating preferences does not overwrite the existing
+       * stored brief.
+       */
+      await pool.query(
+        `
+          INSERT INTO subscribers (
+            id,
+            subscription,
+            watchlist,
+            geo,
+            market,
+            updated_at
+          )
+          VALUES (
+            $1,
+            $2::jsonb,
+            $3::jsonb,
+            $4,
+            $5,
+            NOW()
+          )
+          ON CONFLICT (id)
+          DO UPDATE SET
+            subscription =
+              EXCLUDED.subscription,
+            watchlist =
+              EXCLUDED.watchlist,
+            geo =
+              EXCLUDED.geo,
+            market =
+              EXCLUDED.market,
+            updated_at = NOW()
+        `,
+        [
+          id,
+          JSON.stringify(
+            subscription
+          ),
+          JSON.stringify(
+            cleanWatchlist
+          ),
+          geo || null,
+          market || null,
+        ]
+      );
+
+      console.log(
+        `[subscribe] saved ${id.slice(
+          0,
+          12
+        )}…`
+      );
+
+      res.json({
+        ok: true,
+        id,
+      });
+    } catch (error) {
+      console.error(
+        "subscribe:",
+        error
+      );
+
+      res.status(500).json({
         error:
-          "No push subscription sent.",
+          "Unable to save subscription.",
       });
     }
-
-    const db = await read();
-    const id = idOf(subscription);
-
-    db.subs[id] = {
-      ...(db.subs[id] || {}),
-      subscription,
-      watchlist,
-      geo,
-      market,
-      updated: Date.now(),
-    };
-
-    await write(db);
-
-    res.json({
-      ok: true,
-      id,
-    });
   }
 );
 
 app.post(
   "/api/unsubscribe",
   async (req, res) => {
-    const db = await read();
-    const { endpoint } = req.body || {};
+    try {
+      const { endpoint } =
+        req.body || {};
 
-    if (endpoint) {
-      const id = Buffer.from(endpoint)
-        .toString("base64url")
-        .slice(-40);
+      if (endpoint) {
+        const id = Buffer.from(
+          endpoint
+        )
+          .toString("base64url")
+          .slice(-40);
 
-      delete db.subs[id];
+        await pool.query(
+          `
+            DELETE FROM subscribers
+            WHERE id = $1
+          `,
+          [id]
+        );
+
+        console.log(
+          `[unsubscribe] removed ${id.slice(
+            0,
+            12
+          )}…`
+        );
+      }
+
+      res.json({
+        ok: true,
+      });
+    } catch (error) {
+      console.error(
+        "unsubscribe:",
+        error
+      );
+
+      res.status(500).json({
+        error:
+          "Unable to unsubscribe.",
+      });
     }
-
-    await write(db);
-
-    res.json({
-      ok: true,
-    });
   }
 );
 
@@ -429,29 +635,91 @@ app.post(
 app.get(
   "/api/brief/:id",
   async (req, res) => {
-    const db = await read();
+    try {
+      const result =
+        await pool.query(
+          `
+            SELECT brief
+            FROM subscribers
+            WHERE id = $1
+          `,
+          [req.params.id]
+        );
 
-    const brief =
-      db.subs[req.params.id]?.brief;
+      if (!result.rows.length) {
+        return res.status(404).json({
+          error:
+            "Subscription not found.",
+        });
+      }
 
-    if (!brief) {
-      return res.status(404).json({
+      const brief =
+        result.rows[0].brief;
+
+      if (!brief) {
+        return res.status(404).json({
+          error:
+            "No brief stored yet.",
+        });
+      }
+
+      // Do not serve an old browser-cached API response after
+      // the next 8:00 AM brief is generated.
+      res.set(
+        "Cache-Control",
+        "no-store"
+      );
+
+      res.json(brief);
+    } catch (error) {
+      console.error(
+        "brief lookup:",
+        error
+      );
+
+      res.status(500).json({
         error:
-          "No brief stored yet.",
+          "Unable to load brief.",
       });
     }
-
-    res.json(brief);
   }
 );
 
 // Manual AI generation is disabled.
-app.post("/api/ask", (_req, res) => {
-  res.status(403).json({
-    error:
-      "Manual brief generation is disabled.",
-  });
-});
+app.post(
+  "/api/ask",
+  (_req, res) => {
+    res.status(403).json({
+      error:
+        "Manual brief generation is disabled.",
+    });
+  }
+);
+
+// Verify that Render can reach PostgreSQL.
+app.get(
+  "/api/health",
+  async (_req, res) => {
+    try {
+      await pool.query("SELECT 1");
+
+      res.json({
+        ok: true,
+        database: "connected",
+      });
+    } catch (error) {
+      console.error(
+        "health check:",
+        error
+      );
+
+      res.status(503).json({
+        ok: false,
+        database: "unavailable",
+      });
+    }
+  }
+);
 
 // Keep the manual test route disabled in production.
 // app.post("/api/test-push", async (_req, res) => {
@@ -459,8 +727,36 @@ app.post("/api/ask", (_req, res) => {
 //   res.json({ ok: true });
 // });
 
-app.listen(PORT, () => {
-  console.log(
-    `CRE brief server on :${PORT}`
-  );
-});
+// ── startup ───────────────────────────────────────────────
+async function start() {
+  try {
+    await initializeDatabase();
+
+    cron.schedule(
+      BRIEF_CRON,
+      runDaily,
+      {
+        timezone: BRIEF_TZ,
+      }
+    );
+
+    console.log(
+      `Daily brief scheduled: "${BRIEF_CRON}" (${BRIEF_TZ})`
+    );
+
+    app.listen(PORT, () => {
+      console.log(
+        `CRE brief server on :${PORT}`
+      );
+    });
+  } catch (error) {
+    console.error(
+      "Server startup failed:",
+      error
+    );
+
+    process.exit(1);
+  }
+}
+
+start();
