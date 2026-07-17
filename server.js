@@ -406,16 +406,24 @@ async function fetchMarketPulse() {
 // ── brief generation ──────────────────────────────────────
 async function buildBrief(sub) {
   const brief = {
-    date: new Date()
-      .toISOString()
-      .slice(0, 10),
-    generatedAt: Date.now(),
-    macro: {
-      pulse: [],
-      sections: [],
-    },
-    firms: {},
-  };
+  date: new Date()
+    .toISOString()
+    .slice(0, 10),
+  generatedAt: Date.now(),
+
+  marketPulse: {
+    rates: [],
+    cmbs: [],
+    capRates: [],
+  },
+
+  macro: {
+    pulse: [],
+    sections: [],
+  },
+
+  firms: {},
+};
 
   try {
   brief.macro = parseJSON(
@@ -424,6 +432,15 @@ async function buildBrief(sub) {
 } catch (error) {
   console.error(
     "macro:",
+    error.message
+  );
+}
+  try {
+  brief.marketPulse =
+    await fetchMarketPulse();
+} catch (error) {
+  console.error(
+    "market pulse:",
     error.message
   );
 }
