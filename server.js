@@ -850,6 +850,43 @@ app.post(
 );
 
 // Return the most recently scheduled brief.
+// Return the newest stored brief for browsers that do not
+// have a device-specific notification subscription ID.
+app.get(
+  "/api/brief/latest",
+  async (_req, res) => {
+    try {
+      const result = await pool.query(
+        `
+          SELECT brief
+          FROM subscribers
+          WHERE brief IS NOT NULL
+          ORDER BY updated_at DESC
+          LIMIT 1
+        `
+      );
+
+      if (!result.rows.length || !result.rows[0].brief) {
+        return res.status(404).json({
+          error: "No brief stored yet.",
+        });
+      }
+
+      res.set("Cache-Control", "no-store");
+
+      res.json(result.rows[0].brief);
+    } catch (error) {
+      console.error(
+        "latest brief lookup:",
+        error
+      );
+
+      res.status(500).json({
+        error: "Unable to load latest brief.",
+      });
+    }
+  }
+);
 app.get(
   "/api/brief/:id",
   async (req, res) => {
@@ -887,7 +924,7 @@ app.get(
         "Cache-Control",
         "no-store"
       );
-
+res.set("Cache-Control", "no-store");
       res.json(brief);
     } catch (error) {
       console.error(
