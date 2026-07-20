@@ -996,6 +996,167 @@ res.set("Cache-Control", "no-store");
   }
 );
 
+// Generate local-market intelligence without exposing
+// the unrestricted /api/ask endpoint.
+const localMarketRequests = new Map();
+
+function allowLocalMarketRequest(req) {
+  const now = Date.now();
+
+  const forwarded =
+    req.get("x-forwarded-for");
+
+  const key = String(
+    forwarded?.split(",")[0]?.trim() ||
+    req.ip ||
+    "unknown"
+  );
+
+  const recent = (
+    localMarketRequests.get(key) || []
+  ).filter(
+    timestamp =>
+      now - timestamp <
+      60 * 60 * 1000
+  );
+
+  // Limit each IP to five local-market pulls per hour.
+  if (recent.length >= 5) {
+    localMarketRequests.set(
+      key,
+      recent
+    );
+
+    return false;
+  }
+
+  recent.push(now);
+
+  localMarketRequests.set(
+    key,
+    recent
+  );
+
+  return true;
+}
+
+app.post(
+  "/api/local-market",
+  async (req, res) => {
+    try {
+      if (
+        !allowLocalMarketRequest(req)
+      ) {
+        return res.status(429).json({
+          error:
+            "Too many local-market searches. Try again later.",
+        });
+      }
+
+      const market =
+        typeof req.body?.market ===
+        "string"
+          ? req.body.market.trim()
+          : "";
+
+      const lat =
+        Number(req.body?.lat);
+
+      const lng =
+        Number(req.body?.lng);
+
+      const hasCoordinates =
+        Number.isFinite(lat) &&
+        Number.isFinite(lng) &&
+        lat >= -90 &&
+        lat <= 90 &&
+        lng >= -180 &&
+        lng <= 180;
+
+      if (
+        !market &&
+        !hasCoordinates
+      ) {
+        return res.status(400).json({
+          error:
+            "Provide a market name or valid coordinates.",
+        });
+      }
+
+      if (market.length > 100) {
+        return res.status(400).json({
+          error:
+            "Market name is too long.",
+        });
+      }
+
+      const geo =
+        hasCoordinates
+          ? {
+              lat,
+              lng,
+            }
+          : null;
+
+      const result = parseJSON(
+        await ask(
+          localPrompt(
+            geo,
+            market || null
+          )
+        )
+      );
+
+      res.set(
+        "Cache-Control",
+        "no-store"
+      );
+
+      res.json({
+        market:
+          typeof result.market ===
+          "string"
+            ? result.market
+            : market ||
+              "Local market",
+
+        submarket:
+          typeof result.submarket ===
+          "string"
+            ? result.submarket
+            : "",
+
+        fundamentals:
+          Array.isArray(
+            result.fundamentals
+          )
+            ? result.fundamentals.slice(
+                0,
+                4
+              )
+            : [],
+
+        items:
+          Array.isArray(result.items)
+            ? result.items.slice(
+                0,
+                5
+              )
+            : [],
+      });
+    } catch (error) {
+      console.error(
+        "local market:",
+        error
+      );
+
+      res.status(500).json({
+        error:
+          "Unable to generate local-market intelligence.",
+      });
+    }
+  }
+);
 // Manual AI generation is disabled.
 app.post(
   "/api/ask",
