@@ -1012,29 +1012,21 @@ function allowLocalMarketRequest(req) {
     "unknown"
   );
 
-  const recent = (
-    localMarketRequests.get(key) || []
-  ).filter(
-    timestamp =>
-      now - timestamp <
+  const previous =
+    localMarketRequests.get(key);
+
+  // One request per hour.
+  if (
+    previous &&
+    now - previous <
       60 * 60 * 1000
-  );
-
-  // Limit each IP to five local-market pulls per hour.
-  if (recent.length >= 5) {
-    localMarketRequests.set(
-      key,
-      recent
-    );
-
+  ) {
     return false;
   }
 
-  recent.push(now);
-
   localMarketRequests.set(
     key,
-    recent
+    now
   );
 
   return true;
@@ -1048,9 +1040,9 @@ app.post(
         !allowLocalMarketRequest(req)
       ) {
         return res.status(429).json({
-          error:
-            "Too many local-market searches. Try again later.",
-        });
+  error:
+    "Only one local-market search is allowed per hour.",
+});
       }
 
       const market =
