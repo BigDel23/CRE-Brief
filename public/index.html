@@ -1712,47 +1712,199 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     inp.onkeydown = e => { if(e.key==="Enter") add(); };
   }
 
-  function normalizePulse(raw){
-    const fallback = [
-      {key:"treasury10Y",label:"10Y UST",value:"—",note:"Awaiting market data",targetSection:"rates-debt"},
-      {key:"sofr",label:"SOFR",value:"—",note:"Awaiting market data",targetSection:"rates-debt"},
-      {key:"cmbs",label:"CMBS",value:"—",note:"Awaiting credit signal",targetSection:"rates-debt"},
-      {key:"capRates",label:"CAP RATES",value:"—",note:"Awaiting pricing signal",targetSection:"capital-markets"}
-    ];
-
-    const source = raw || [];
-
-    if(Array.isArray(source)){
-      return fallback.map((base,i)=>{
-        const item = source[i] || {};
-        return {
-          ...base,
-          ...item,
-          label:item.label || base.label,
-          note:item.note || item.detail || base.note,
-          targetSection:item.targetSection || base.targetSection
-        };
-      });
+  function normalizePulse(raw) {
+  const fallback = [
+    {
+      key: "treasury10Y",
+      label: "10Y UST",
+      value: "—",
+      note: "Awaiting market data",
+      targetSection: "rates-debt"
+    },
+    {
+      key: "sofr",
+      label: "SOFR",
+      value: "—",
+      note: "Awaiting market data",
+      targetSection: "rates-debt"
+    },
+    {
+      key: "cmbs",
+      label: "CMBS",
+      value: "—",
+      note: "Awaiting credit signal",
+      targetSection: "rates-debt"
+    },
+    {
+      key: "capRates",
+      label: "CAP RATES",
+      value: "—",
+      note: "Awaiting pricing signal",
+      targetSection: "capital-markets"
     }
+  ];
 
-    const pick = (keys,base)=>{
-      const item = keys.map(k=>source?.[k]).find(Boolean) || {};
+  const source = raw || {};
+
+  // Older frontend format: an array of exactly four entries.
+  if (Array.isArray(source)) {
+    return fallback.map((base, index) => {
+      const item = source[index] || {};
+
       return {
         ...base,
         ...item,
-        label:item.label || base.label,
-        note:item.note || item.detail || base.note,
-        targetSection:item.targetSection || base.targetSection
+        label: item.label || base.label,
+        note:
+          item.note ||
+          item.detail ||
+          item.change ||
+          item.source ||
+          base.note,
+        targetSection:
+          item.targetSection ||
+          base.targetSection
       };
-    };
-
-    return [
-      pick(["treasury10Y","tenYear","ust10Y"],fallback[0]),
-      pick(["sofr"],fallback[1]),
-      pick(["cmbs"],fallback[2]),
-      pick(["capRates","caprates"],fallback[3])
-    ];
+    });
   }
+
+  // Current backend format:
+  // {
+  //   rates: [10Y, SOFR],
+  //   cmbs: [AAA, BBB],
+  //   capRates: [industrial, office, multifamily, retail]
+  // }
+
+  const rates = Array.isArray(source.rates)
+    ? source.rates
+    : [];
+
+  const cmbs = Array.isArray(source.cmbs)
+    ? source.cmbs
+    : [];
+
+  const capRates = Array.isArray(source.capRates)
+    ? source.capRates
+    : [];
+
+  const treasury =
+    rates.find(item => item.key === "treasury10Y") ||
+    rates.find(item =>
+      String(item.label || "")
+        .toLowerCase()
+        .includes("10y")
+    ) ||
+    {};
+
+  const sofr =
+    rates.find(item => item.key === "sofr") ||
+    rates.find(item =>
+      String(item.label || "")
+        .toLowerCase()
+        .includes("sofr")
+    ) ||
+    {};
+
+  const aaa =
+    cmbs.find(item => item.key === "cmbsAAA") ||
+    cmbs.find(item =>
+      String(item.label || "")
+        .toLowerCase()
+        .includes("aaa")
+    ) ||
+    cmbs[0] ||
+    {};
+
+  const bbb =
+    cmbs.find(item => item.key === "cmbsBBB") ||
+    cmbs.find(item =>
+      String(item.label || "")
+        .toLowerCase()
+        .includes("bbb")
+    ) ||
+    cmbs[1] ||
+    {};
+
+  const capSummary = capRates.length
+    ? {
+        key: "capRates",
+        label: "CAP RATES",
+        value: capRates[0]?.value || "—",
+        note: capRates
+          .slice(0, 4)
+          .map(item =>
+            `${item.label || ""} ${item.value || ""}`.trim()
+          )
+          .join(" · "),
+        source: capRates[0]?.source,
+        targetSection: "capital-markets"
+      }
+    : {};
+
+  const describe = (item, fallbackNote) => {
+    const parts = [
+      item.change,
+      item.asOf ? `as of ${item.asOf}` : null,
+      item.source
+    ].filter(Boolean);
+
+    return parts.join(" · ") || fallbackNote;
+  };
+
+  return [
+    {
+      ...fallback[0],
+      ...treasury,
+      label: treasury.label || fallback[0].label,
+      value: treasury.value || fallback[0].value,
+      note: describe(
+        treasury,
+        fallback[0].note
+      ),
+      targetSection: "rates-debt"
+    },
+    {
+      ...fallback[1],
+      ...sofr,
+      label: sofr.label || fallback[1].label,
+      value: sofr.value || fallback[1].value,
+      note: describe(
+        sofr,
+        fallback[1].note
+      ),
+      targetSection: "rates-debt"
+    },
+    {
+      ...fallback[2],
+      key: "cmbs",
+      label: "CMBS",
+      value:
+        aaa.value && bbb.value
+          ? `${aaa.value} / ${bbb.value}`
+          : aaa.value || bbb.value || fallback[2].value,
+      note:
+        aaa.value || bbb.value
+          ? `AAA ${aaa.value || "—"} · BBB ${bbb.value || "—"}`
+          : fallback[2].note,
+      source:
+        aaa.source ||
+        bbb.source ||
+        null,
+      targetSection: "rates-debt"
+    },
+    {
+      ...fallback[3],
+      ...capSummary,
+      value:
+        capSummary.value ||
+        fallback[3].value,
+      note:
+        capSummary.note ||
+        fallback[3].note,
+      targetSection: "capital-markets"
+    }
+  ];
+}
 
   function pulseTone(value){
     const v = String(value||"").toUpperCase();
