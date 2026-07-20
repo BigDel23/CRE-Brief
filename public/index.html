@@ -1016,7 +1016,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     else if(L.status === "pulling") body = `<div class="pending">Searching ${esc(L.override||"your market")}</div>`;
     else if(L.status === "blocked") body = `<div class="err">${esc(L.msg)}</div>`;
     else if(L.status === "error") body = `<div class="err">${esc(L.msg)} Try pulling again.</div>`;
-    else if(L.status === "idle") body = `<div class="quiet">Pull the brief and this fills with deals, leases and fundamentals where you are.</div>`;
+    else if(L.status === "idle") body = `<div class="quiet">Choose “Use market” or “Use my location” to load local deals, leases and fundamentals.</div>`;
     else if(!L.items.length) body = `<div class="quiet">Nothing reported in this market in the past two weeks.</div>`;
     else body = L.items.map(i=>itemHTML(i,true)).join("");
 
@@ -1036,38 +1036,44 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
       </section>`;
   }
 
-  function wireLocal() {
-  const inp = $("mktin");
-  if (!inp) return;
+  function wireLocal(){
+    const inp = $("mktin");
+    const setButton = $("mktset");
+    const clearButton = $("mktclear");
 
-  const set = async () => {
-    const v = inp.value.trim();
-    if (!v) return;
+    if(!inp || !setButton) return;
 
-    state.local.override = v;
-    state.local.market = v;
-    state.local.geo = null;
+    const resetLocalResults = () => {
+      state.local.submarket = null;
+      state.local.items = [];
+      state.local.fundamentals = [];
+      state.local.msg = "";
+      state.local.status = "idle";
+    };
 
-    await save(KEY_MARKET, {
-      override: v,
-      market: v
-    });
+    const useTypedMarket = async () => {
+      const market = inp.value.trim();
+      if(!market) return;
 
-    render();
-  };
+      state.local.override = market;
+      state.local.market = market;
+      state.local.geo = null;
+      resetLocalResults();
 
-  $("mktset").onclick = set;
-  inp.onkeydown = e => {
-    if (e.key === "Enter") set();
-  };
+      await save(KEY_MARKET, {
+        override: market,
+        market
+      });
 
-  const clear = $("mktclear");
+      render();
+      await pullLocal();
+    };
 
-  if (clear) {
-    clear.onclick = async () => {
+    const useDeviceLocation = async () => {
       state.local.override = null;
       state.local.market = null;
       state.local.geo = null;
+      resetLocalResults();
 
       await save(KEY_MARKET, {
         override: null,
@@ -1075,9 +1081,22 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
       });
 
       render();
+      await pullLocal();
     };
+
+    setButton.onclick = useTypedMarket;
+
+    inp.onkeydown = event => {
+      if(event.key === "Enter"){
+        event.preventDefault();
+        useTypedMarket();
+      }
+    };
+
+    if(clearButton){
+      clearButton.onclick = useDeviceLocation;
+    }
   }
-}
 
   function watchHTML(){
     return `<section class="add-panel">
