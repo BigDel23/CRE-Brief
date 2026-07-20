@@ -436,6 +436,287 @@ a{color:inherit}
 }
 @media(hover:none){.card:hover,.btn:hover{transform:none}.item:hover{padding-left:16px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+    /* ─────────────────────────────────────────────
+   MOBILE / IOS LAYOUT
+   Desktop layout remains unchanged.
+───────────────────────────────────────────── */
+
+@media (max-width: 520px) {
+
+  html,
+  body {
+    min-height: 100%;
+    background: var(--bg);
+  }
+
+  #cre-root {
+    min-height: 100dvh;
+    padding:
+      max(10px, env(safe-area-inset-top))
+      8px
+      max(90px, calc(env(safe-area-inset-bottom) + 72px));
+    background-attachment: scroll;
+  }
+
+  .sheet {
+    width: 100%;
+  }
+
+  /* Compact system header */
+  .ops-bar {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(135px, .8fr);
+    min-height: 0;
+  }
+
+  .ops-cell {
+    min-height: 86px;
+    padding: 13px 14px;
+  }
+
+  /* Keep brand and time only */
+  .ops-cell:nth-child(3),
+  .ops-cell:nth-child(4),
+  .ops-cell:nth-child(5) {
+    display: none;
+  }
+
+  .ops-brand {
+    font-size: 22px;
+    line-height: 1;
+    white-space: normal;
+  }
+
+  .ops-brand-sub {
+    margin-top: 8px;
+    font-size: 7px;
+    line-height: 1.5;
+  }
+
+  .ops-value {
+    font-size: 12px;
+  }
+
+  .ops-detail {
+    font-size: 7px;
+  }
+
+  /* Compact action row */
+  .ops-actions {
+    display: flex !important;
+    grid-column: 1 / -1;
+    min-height: 58px;
+    gap: 8px;
+    padding: 8px;
+    border-left: 0;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .admin-refresh {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    height: 42px;
+    padding: 0 14px;
+  }
+
+  .ops-icon {
+    flex: 0 0 48px;
+    width: 48px;
+    height: 42px;
+  }
+
+  /* Smaller ticker */
+  .headline-tape {
+    height: 34px;
+    margin-bottom: 10px;
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
+
+  .tape-label {
+    padding: 0 10px;
+    font-size: 7px;
+  }
+
+  .tape-content {
+    gap: 22px;
+  }
+
+  .tape-item {
+    font-size: 8px;
+  }
+
+  .tape-view {
+    display: none;
+  }
+
+  /* Daily brief header */
+  .titleblock {
+    display: block;
+    min-height: 0;
+  }
+
+  .terminal-brand {
+    padding: 18px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .terminal-kicker {
+    margin-bottom: 9px;
+    font-size: 7.5px;
+    letter-spacing: .12em;
+    white-space: normal;
+  }
+
+  .tb-title {
+    font-size: 36px;
+    line-height: .95;
+  }
+
+  .tb-sub {
+    margin-top: 10px;
+    font-size: 8px;
+  }
+
+  .console-bar {
+    height: 36px;
+    padding: 0 12px;
+  }
+
+  .console-hint {
+    display: none;
+  }
+
+  /* Two-column snapshot instead of four tall rows */
+  .market-snapshot {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .market-line {
+    min-height: 116px;
+    padding: 13px 12px;
+    border-left: 1px solid var(--line-soft);
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .market-line:nth-child(odd) {
+    border-left: 0;
+  }
+
+  .market-line:nth-child(-n + 2) {
+    border-top: 0;
+  }
+
+  .market-code {
+    font-size: 7.5px;
+  }
+
+  .market-value {
+    font-size: 21px;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .market-note {
+    font-size: 8px;
+    line-height: 1.4;
+    -webkit-line-clamp: 2;
+  }
+
+  /* Brief action buttons */
+  .tb-actions {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .brief-status {
+    grid-column: 1 / -1;
+    width: auto;
+    margin: 0 0 3px;
+  }
+
+  .tb-actions .btn-ghost {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  /* Remove crowded desktop navigation */
+  .plan {
+    margin-top: 10px;
+  }
+
+  .rail {
+    display: none;
+  }
+
+  .col {
+    gap: 10px;
+  }
+
+  .card,
+  .empty,
+  .add-panel {
+    border-radius: 7px;
+  }
+
+  .card-head {
+    min-height: 42px;
+    padding: 9px 11px;
+  }
+
+  .hero-body {
+    padding: 10px;
+  }
+
+  .market-summary-panel,
+  .top-story-panel {
+    padding: 14px;
+  }
+
+  .top-story-panel h2 {
+    margin: 12px 0;
+    font-size: clamp(30px, 10vw, 41px);
+    line-height: .96;
+  }
+
+  .top-story-panel p {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .item {
+    padding: 13px 12px;
+  }
+
+  .item h4 {
+    font-size: 13px;
+  }
+
+  .item p {
+    font-size: 11px;
+  }
+
+  .command-hint {
+    display: none;
+  }
+}
+
+/* Extra spacing when launched from the iOS home screen */
+@media (display-mode: standalone) and (max-width: 520px) {
+  #cre-root {
+    padding-top:
+      max(12px, env(safe-area-inset-top));
+    padding-bottom:
+      max(28px, env(safe-area-inset-bottom));
+  }
+}
 </style>
 </head>
 <body>
