@@ -122,6 +122,44 @@ a{color:inherit}
 .ops-tight{color:var(--amber)}
 .ops-score{font-family:var(--display);font-size:29px;color:var(--green);line-height:.95}
 .ops-actions{display:flex;align-items:center;justify-content:center;padding:8px}
+.ops-actions{gap:8px}
+.admin-refresh{
+  min-height:38px;
+  padding:0 13px;
+  border:1px solid rgba(242,180,65,.62);
+  border-radius:5px;
+  background:rgba(242,180,65,.07);
+  color:var(--amber);
+  font-family:var(--mono);
+  font-size:8px;
+  font-weight:600;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  white-space:nowrap;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease;
+}
+.admin-refresh:hover{
+  background:rgba(242,180,65,.14);
+  border-color:var(--amber);
+  color:#ffd277;
+  transform:translateY(-1px);
+}
+.admin-refresh:disabled{
+  opacity:.55;
+  cursor:wait;
+  transform:none;
+}
+.admin-refresh.success{
+  color:var(--green);
+  border-color:rgba(66,229,138,.6);
+  background:rgba(66,229,138,.07);
+}
+.admin-refresh.error{
+  color:var(--red);
+  border-color:rgba(255,113,91,.6);
+  background:rgba(255,113,91,.07);
+}
+
 .ops-icon{width:38px;height:38px;border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--muted);font-family:var(--mono);font-size:16px}
 .ops-icon:hover{color:var(--amber);border-color:var(--amber-soft);background:rgba(243,182,66,.07)}
 .status-dot,.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 13px rgba(73,223,146,.7)}
@@ -383,7 +421,7 @@ a{color:inherit}
   <div class="sheet">
     <section class="ops-bar" aria-label="CRE intelligence status">
       <div class="ops-cell">
-        <div class="ops-brand">CRE News Terminal</div>
+        <div class="ops-brand">CRE Intelligence OS</div>
         <div class="ops-brand-sub">Institutional market terminal</div>
       </div>
       <div class="ops-cell">
@@ -407,6 +445,7 @@ a{color:inherit}
         <span class="ops-detail" id="opsRegimeDetail">Reading market signals</span>
       </div>
       <div class="ops-actions">
+        <button class="admin-refresh" id="adminRefresh" type="button" title="Generate a fresh brief">↻ Refresh</button>
         <button class="ops-icon" id="commandOpen" type="button" title="Open command palette" aria-label="Open command palette">⌘</button>
       </div>
     </section>
@@ -1437,6 +1476,99 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
   function closeCommand(){
     $("commandOverlay")?.classList.remove("open");
   }
+
+
+  async function fetchLatestBriefNoCache(){
+    const response = await fetch("/api/brief/latest?t=" + Date.now(), {
+      cache: "no-store"
+    });
+    if(!response.ok) throw new Error("Latest brief request failed (" + response.status + ")");
+    return response.json();
+  }
+
+  async function waitForFreshBrief(previousGeneratedAt){
+    const attempts = 18;
+    for(let attempt = 0; attempt < attempts; attempt++){
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      try{
+        const brief = await fetchLatestBriefNoCache();
+        const generatedAt = Number(brief.generatedAt || brief.macro?.generatedAt || 0);
+        if(!previousGeneratedAt || generatedAt > previousGeneratedAt){
+          if(typeof window.__creLoad === "function"){
+            await window.__creLoad(brief);
+          }
+          return brief;
+        }
+      }catch(error){
+        console.warn("Fresh brief check failed:", error);
+      }
+    }
+    throw new Error("Generation started, but the new brief is still processing.");
+  }
+
+  $("adminRefresh")?.addEventListener("click", async () => {
+    const button = $("adminRefresh");
+    const secret = window.prompt("Enter the admin password to generate a fresh brief:");
+
+    if(secret === null) return;
+    if(!secret.trim()){
+      window.alert("An admin password is required.");
+      return;
+    }
+
+    const previousGeneratedAt = Number(
+      state.generatedAt ||
+      state.macro?.generatedAt ||
+      0
+    );
+
+    button.disabled = true;
+    button.classList.remove("success","error");
+    button.textContent = "Starting…";
+
+    try{
+      const response = await fetch("/api/admin/refresh-brief", {
+        method: "POST",
+        headers: {
+          "x-admin-secret": secret.trim(),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
+      });
+
+      let payload = {};
+      try{ payload = await response.json(); }catch(_){}
+
+      if(!response.ok){
+        if(response.status === 401 || response.status === 403){
+          throw new Error("Incorrect admin password.");
+        }
+        throw new Error(payload.error || payload.message || "Refresh request failed (" + response.status + ")");
+      }
+
+      button.textContent = "Generating…";
+      const brief = await waitForFreshBrief(previousGeneratedAt);
+
+      state.generatedAt = brief.generatedAt || Date.now();
+      button.classList.add("success");
+      button.textContent = "Updated ✓";
+      setTimeout(() => {
+        button.classList.remove("success");
+        button.textContent = "↻ Refresh";
+      }, 3500);
+    }catch(error){
+      console.error("Admin refresh failed:", error);
+      button.classList.add("error");
+      button.textContent = "Refresh failed";
+      window.alert(error.message || "The refresh could not be completed.");
+      setTimeout(() => {
+        button.classList.remove("error");
+        button.textContent = "↻ Refresh";
+      }, 3500);
+    }finally{
+      button.disabled = false;
+    }
+  });
 
   $("commandOpen")?.addEventListener("click",openCommand);
   $("commandHint")?.addEventListener("click",openCommand);
