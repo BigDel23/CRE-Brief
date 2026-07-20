@@ -31,7 +31,7 @@ const {
   VAPID_PUBLIC_KEY,
   VAPID_PRIVATE_KEY,
   VAPID_SUBJECT = "mailto:you@example.com",
-  BRIEF_CRON = "0 8 * * 1-5",
+  BRIEF_CRON = "0 8 * * *",
   BRIEF_TZ = "America/New_York",
 } = process.env;
 
@@ -138,6 +138,10 @@ function parseJSON(text) {
     .replace(/```/g, "")
     .trim();
 
+  try {
+    return JSON.parse(cleaned);
+  } catch {}
+
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
 
@@ -146,12 +150,28 @@ function parseJSON(text) {
     end === -1 ||
     end <= start
   ) {
-    throw new Error("No JSON in response");
+    console.error(
+      "Model response:",
+      cleaned.slice(0, 500)
+    );
+
+    throw new Error(
+      "No complete JSON object."
+    );
   }
 
-  return JSON.parse(
-    cleaned.slice(start, end + 1)
-  );
+  try {
+    return JSON.parse(
+      cleaned.slice(start, end + 1)
+    );
+  } catch (e) {
+    console.error(
+      "Invalid JSON:",
+      cleaned.slice(0, 500)
+    );
+
+    throw e;
+  }
 }
 // ── direct market data ────────────────────────────────────
 
