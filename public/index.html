@@ -548,20 +548,48 @@ a{color:inherit}
   }
 
   /* ── model call ──────────────────────────── */
-  async function ask(prompt){
-  const res = await fetch("/api/local-market", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ prompt })
-  });
+  async function askLocalMarket(){
+  const L = state.local;
+
+  const requestBody = L.override
+    ? {
+        market: L.override
+      }
+    : {
+        lat: L.geo?.lat,
+        lng: L.geo?.lng
+      };
+
+  const res = await fetch(
+    "/api/local-market",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          "application/json"
+      },
+      body:
+        JSON.stringify(
+          requestBody
+        )
+    }
+  );
+
+  let data = {};
+
+  try {
+    data =
+      await res.json();
+  } catch (_) {}
 
   if (!res.ok) {
-    throw new Error("Request failed (" + res.status + ")");
+    throw new Error(
+      data.error ||
+      `Request failed (${res.status})`
+    );
   }
 
-  return await res.json();
+  return data;
 }
   function parseJSON(text){
     let t = text.replace(/```json/g,"").replace(/```/g,"").trim();
@@ -652,7 +680,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
 
     L.status = "pulling"; render();
     try{
-      const d = await ask(localPrompt());
+const d = await askLocalMarket();
       L.market = d.market || L.override || "Your market";
       L.submarket = d.submarket || "";
       L.items = Array.isArray(d.items) ? d.items : [];
