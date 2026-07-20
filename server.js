@@ -1032,11 +1032,39 @@ app.get(
   }
 );
 
-// Keep the manual test route disabled in production.
-// app.post("/api/test-push", async (_req, res) => {
-//   await runDaily();
-//   res.json({ ok: true });
-// });
+app.post(
+  "/api/admin/refresh-brief",
+  async (req, res) => {
+    const secret = req.get("x-admin-secret");
+
+    if (
+      !process.env.ADMIN_SECRET ||
+      secret !== process.env.ADMIN_SECRET
+    ) {
+      return res.status(401).json({
+        error: "Unauthorized.",
+      });
+    }
+
+    if (dailyRunActive) {
+      return res.status(409).json({
+        error: "A brief generation is already running.",
+      });
+    }
+
+    res.status(202).json({
+      ok: true,
+      message: "Brief generation started.",
+    });
+
+    runDaily().catch(error => {
+      console.error(
+        "[manual refresh] failed:",
+        error
+      );
+    });
+  }
+);
 
 // ── startup ───────────────────────────────────────────────
 async function start() {
