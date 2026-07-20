@@ -535,6 +535,21 @@ a{color:inherit}
 
   const $ = id => document.getElementById(id);
   const esc = s => String(s??"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const cleanText = value =>
+  String(value ?? "")
+    .replace(
+      /<cite\b[^>]*>/gi,
+      ""
+    )
+    .replace(
+      /<\/cite>/gi,
+      ""
+    )
+    .replace(
+      /\s+/g,
+      " "
+    )
+    .trim();
   const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-');
 
   /* ── storage ─────────────────────────────── */
@@ -813,9 +828,11 @@ const d = await askLocalMarket();
     const tag = showTag && it.tag ? `<span class="tag ${esc(it.tag)}">${esc(it.tag)}</span>` : "";
     const date = it.date ? `<span class="src">${esc(it.date)}</span>` : "";
     return `<article class="item">
-      <h4>${esc(it.headline)}</h4>
-      <p>${esc(it.detail)}</p>
-      ${it.why ? `<div class="why">${esc(it.why)}</div>` : ""}
+      <h4>${esc(cleanText(it.headline))}</h4>
+<p>${esc(cleanText(it.detail))}</p>
+${it.why
+  ? `<div class="why">${esc(cleanText(it.why))}</div>`
+  : ""}
       <div class="foot">${tag}${date}${src}</div>
     </article>`;
   }
@@ -860,8 +877,15 @@ const d = await askLocalMarket();
         : "Macro intelligence is still assembling."
     ].join(" ");
 
-    const headline = topStory?.headline || "Today’s market intelligence is assembling";
-    const detail = topStory?.detail || "The system will surface the most consequential commercial real estate signal as soon as the daily brief arrives.";
+    const headline = cleanText(
+  topStory?.headline ||
+  "Today’s market intelligence is assembling"
+);
+
+const detail = cleanText(
+  topStory?.detail ||
+  "The system will surface the most consequential commercial real estate signal as soon as the daily brief arrives."
+);
     const group = topStory?.group || "CRE Intelligence";
     const impact = macroItems.length >= 8 ? "HIGH IMPACT" : macroItems.length >= 4 ? "ELEVATED" : "MONITOR";
     const sourceLink = topStory?.url
@@ -873,8 +897,8 @@ const d = await askLocalMarket();
           <button class="signal-item" type="button" data-signal-target="${esc(item.group || "")}">
             <span class="signal-rank">0${index+2}</span>
             <span class="signal-copy">
-              <strong>${esc(item.headline || "Untitled signal")}</strong>
-              <small>${esc(item.group || item.kind || "Intelligence")}</small>
+<strong>${esc(cleanText(item.headline || "Untitled signal"))}</strong>
+<small>${esc(item.group || item.kind || "Intelligence")}</small>
             </span>
           </button>`).join("")}</div>`
       : "";
