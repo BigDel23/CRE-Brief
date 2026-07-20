@@ -167,6 +167,24 @@ background-attachment:fixed;
     from{background-position:0 0}
     to{background-position:16px 0}
   }
+  .rail-remove{
+    margin-left:auto;
+    border:none;
+    background:transparent;
+    color:#7f93a5;
+    cursor:pointer;
+    font-size:12px;
+    opacity:0;
+    transition:opacity .15s;
+}
+
+.floor:hover .rail-remove{
+    opacity:1;
+}
+
+.rail-remove:hover{
+    color:#ff6666;
+}
   .grade{
     border-top:1px solid var(--line);margin-top:2px;padding-top:5px;
     display:flex;justify-content:space-between;
@@ -1312,10 +1330,24 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
 
     const n = floors.length;
     let html = floors.map((f,i)=>`
-      <button class="floor ${f.cls}" data-t="${f.target}" title="${esc(f.label)}">
-        <span class="floor-num">${n-i}</span>
-        <span class="floor-band">${esc(f.label)}</span>
-      </button>`).join("");
+      <button class="floor ${f.cls}" data-t="${f.target}">
+    <span class="floor-num">${n-i}</span>
+
+    <span class="floor-band">
+        ${esc(f.label)}
+    </span>
+
+    ${
+      f.target.startsWith("firm-")
+        ? `<button
+             class="rail-remove"
+             data-drop="${esc(f.label)}"
+             title="Remove ${esc(f.label)}"
+           >✕</button>`
+        : ""
+    }
+
+</button>`).join("");
 
     // Below grade: your local market is the ground everything else sits on.
     const L = state.local;
@@ -1337,7 +1369,36 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
       b.onclick = ()=> document.getElementById(b.dataset.t)?.scrollIntoView({behavior:"smooth",block:"start"});
     });
   }
+rail.querySelectorAll(".rail-remove").forEach(btn => {
 
+    btn.onclick = async (e) => {
+
+        e.stopPropagation();
+
+        if (state.watchlist.length === 1) {
+            alert("Keep at least one company.");
+            return;
+        }
+
+        if (!confirm(`Remove "${btn.dataset.drop}"?`)) {
+            return;
+        }
+
+        state.watchlist =
+            state.watchlist.filter(
+                f => f !== btn.dataset.drop
+            );
+
+        delete state.firms[btn.dataset.drop];
+
+        await save(KEY_WATCH, state.watchlist);
+
+        await window.syncSub?.();
+
+        render();
+    };
+
+});
   /* ── item rendering ──────────────────────── */
   function itemHTML(it, showTag){
     const src = it.url
