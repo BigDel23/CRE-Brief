@@ -2016,24 +2016,38 @@ if (supported) {
 }
 
   // If the cron already built today's brief, show that instead of re-searching.
-  window.addEventListener("load", async () => {
+ window.addEventListener("load", async () => {
   const id = localStorage.getItem(KEY_SUB);
 
-  if (!id) {
-    return;
-  }
-
   try {
-    const res = await fetch("/api/brief/" + id);
+    let res;
+
+    // Subscribers receive their personalized stored brief.
+    if (id) {
+      res = await fetch(
+        "/api/brief/" + encodeURIComponent(id) + "?t=" + Date.now(),
+        { cache: "no-store" }
+      );
+    }
+
+    // Everyone else—or a failed subscriber lookup—gets the latest brief.
+    if (!res || !res.ok) {
+      res = await fetch(
+        "/api/brief/latest?t=" + Date.now(),
+        { cache: "no-store" }
+      );
+    }
 
     if (!res.ok) {
-      return;
+      throw new Error(`Brief request failed: ${res.status}`);
     }
 
     const brief = await res.json();
 
-    if (window.__creLoad) {
+    if (typeof window.__creLoad === "function") {
       await window.__creLoad(brief);
+    } else {
+      console.error("Brief renderer window.__creLoad is unavailable.");
     }
   } catch (error) {
     console.error("Could not load stored brief:", error);
