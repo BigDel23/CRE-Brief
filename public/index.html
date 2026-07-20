@@ -1128,10 +1128,349 @@ background-attachment:fixed;
   }
 }
 
+
+/* ─────────────────────────────────────────────
+   CRE INTELLIGENCE OS — FUTURISTIC TERMINAL UI
+   Visual layer only; existing API and data behavior remain intact.
+───────────────────────────────────────────── */
+:root{
+  --signal-green:#42e58a;
+  --signal-red:#ff715b;
+  --signal-cyan:#54c8ff;
+  --signal-amber:#ffc044;
+  --void:#020b12;
+  --glass:rgba(7,27,40,.86);
+}
+
+html{scroll-behavior:smooth}
+body{overflow-x:hidden}
+
+#cre-root{
+  position:relative;
+  background:
+    radial-gradient(circle at 54% -15%,rgba(44,128,164,.19),transparent 38%),
+    linear-gradient(rgba(2,12,19,.84),rgba(2,12,19,.92)),
+    url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2200&q=80");
+}
+
+#cre-root::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:.24;
+  background-image:
+    linear-gradient(rgba(85,180,218,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(85,180,218,.035) 1px,transparent 1px);
+  background-size:36px 36px;
+  mask-image:linear-gradient(to bottom,black,transparent 80%);
+}
+
+.sheet{position:relative;z-index:1}
+
+/* Global operations status bar */
+.ops-bar{
+  display:grid;
+  grid-template-columns:minmax(240px,1.25fr) repeat(4,minmax(128px,.72fr)) auto;
+  border:1px solid rgba(93,167,201,.42);
+  border-radius:8px 8px 0 0;
+  overflow:hidden;
+  background:linear-gradient(180deg,rgba(4,18,28,.97),rgba(3,14,23,.94));
+  box-shadow:0 22px 56px rgba(0,0,0,.42),inset 0 1px rgba(255,255,255,.04);
+}
+
+.ops-cell{
+  min-height:68px;
+  padding:10px 14px;
+  border-left:1px solid var(--line-soft);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-width:0;
+}
+
+.ops-cell:first-child{border-left:0}
+
+.ops-brand{
+  font-family:var(--display);
+  font-size:23px;
+  line-height:1;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.ops-brand-sub,.ops-label,.ops-detail{
+  font-family:var(--data);
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+
+.ops-brand-sub{font-size:8px;color:var(--dimmer);margin-top:6px}
+.ops-label{font-size:8px;color:var(--dimmer);margin-bottom:4px}
+.ops-value{font-family:var(--data);font-size:15px;color:var(--print);white-space:nowrap}
+.ops-detail{font-size:7.5px;color:var(--dimmer);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ops-live{color:var(--signal-green)}
+.ops-risk{color:var(--signal-red)}
+.ops-tight{color:var(--signal-amber)}
+.ops-score{font-size:27px;color:var(--signal-green);line-height:1}
+.status-dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--signal-green);box-shadow:0 0 14px rgba(66,229,138,.7);margin-right:7px;
+  animation:statusPulse 2s ease-in-out infinite;
+}
+@keyframes statusPulse{50%{opacity:.45;box-shadow:0 0 4px rgba(66,229,138,.3)}}
+
+.ops-actions{flex-direction:row;align-items:center;gap:8px;padding:10px}
+.ops-icon{
+  width:38px;height:38px;border:1px solid var(--line);background:rgba(255,255,255,.02);
+  color:var(--dim);font-family:var(--data);font-size:15px;border-radius:5px;
+}
+.ops-icon:hover{color:var(--pencil);border-color:var(--pencil-deep);background:rgba(242,180,65,.06)}
+
+/* Headline tape */
+.headline-tape{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  min-height:35px;
+  border:1px solid rgba(93,167,201,.34);
+  border-top:0;
+  background:rgba(2,13,21,.91);
+  overflow:hidden;
+  margin-bottom:12px;
+}
+
+.tape-label{
+  align-self:stretch;display:flex;align-items:center;padding:0 14px;
+  color:var(--pencil);font-family:var(--data);font-size:8px;letter-spacing:.13em;
+  border-right:1px solid var(--line-soft);
+}
+
+.tape-track{overflow:hidden;white-space:nowrap;position:relative}
+.tape-content{
+  display:inline-flex;align-items:center;gap:34px;padding-left:100%;
+  animation:tapeScroll 38s linear infinite;
+}
+.tape-content:hover{animation-play-state:paused}
+.tape-item{font-family:var(--data);font-size:9px;color:var(--dim)}
+.tape-time{color:var(--print);margin-right:9px}
+.tape-view{
+  border:0;border-left:1px solid var(--line-soft);background:transparent;color:var(--dimmer);
+  padding:0 13px;align-self:stretch;font-family:var(--data);font-size:8px;letter-spacing:.1em;
+}
+@keyframes tapeScroll{to{transform:translateX(-100%)}}
+
+/* Integrate existing terminal header below command bar */
+.titleblock.terminal-head{
+  border-radius:8px;
+  margin-top:0;
+  background:linear-gradient(145deg,rgba(10,39,56,.93),rgba(4,21,32,.94));
+}
+
+.terminal-brand .tb-title{font-size:27px}
+.terminal-kicker::after{content:"  //  SYSTEM ONLINE";color:var(--signal-green)}
+
+/* Market snapshot with synthetic terminal sparkline */
+.market-line{isolation:isolate}
+.market-line::before{
+  content:"";
+  position:absolute;
+  left:10px;right:10px;bottom:8px;height:20px;
+  opacity:.55;z-index:-1;
+  background:
+    linear-gradient(135deg,transparent 0 9%,currentColor 10% 11%,transparent 12% 20%,currentColor 21% 22%,transparent 23% 33%,currentColor 34% 35%,transparent 36% 45%,currentColor 46% 48%,transparent 49% 60%,currentColor 61% 63%,transparent 64% 73%,currentColor 74% 76%,transparent 77% 87%,currentColor 88% 90%,transparent 91%);
+  clip-path:polygon(0 80%,8% 68%,16% 74%,25% 45%,34% 57%,43% 39%,52% 49%,61% 25%,70% 36%,79% 15%,88% 27%,100% 0,100% 100%,0 100%);
+}
+.market-line[data-tone="positive"]{color:var(--signal-green)}
+.market-line[data-tone="negative"]{color:var(--signal-red)}
+.market-line[data-tone="mixed"]{color:var(--signal-amber)}
+.market-code,.market-note{color:var(--dim)}
+.market-value{font-size:20px!important}
+
+/* Rail becomes a mission-watch instrument */
+.rail-head::before{content:"MISSION ";color:var(--pencil)}
+.rail{
+  border:1px solid rgba(86,151,183,.25);
+  box-shadow:0 22px 55px rgba(0,0,0,.35);
+}
+.floor-row{position:relative}
+.floor-row::before{
+  content:"";position:absolute;left:29px;bottom:3px;width:34px;height:2px;z-index:2;
+  background:linear-gradient(90deg,var(--signal-green) 0 55%,rgba(66,229,138,.18) 55%);
+  opacity:0;pointer-events:none;
+}
+.floor-row:has(.floor.leased)::before{opacity:.8}
+.floor.leased .floor-band{text-shadow:0 0 13px rgba(242,180,65,.24)}
+.floor:hover{transform:none}
+.floor-row:hover{background:rgba(84,200,255,.045)}
+
+/* Hero becomes a briefing command module */
+.hero-card{min-height:330px}
+.hero-body{padding:14px!important}
+.hero-command-grid{
+  display:grid;
+  grid-template-columns:minmax(210px,.38fr) minmax(0,1fr);
+  gap:12px;
+}
+.market-summary{
+  border:1px solid var(--line-soft);
+  background:rgba(2,18,28,.48);
+  padding:15px;
+  min-height:230px;
+}
+.module-label{
+  font-family:var(--data);font-size:8px;letter-spacing:.13em;color:var(--dimmer);
+  text-transform:uppercase;margin-bottom:9px;
+}
+.regime-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.regime-value{
+  font-family:var(--display);font-size:20px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--signal-amber);
+}
+.summary-copy{color:var(--dim);font-size:12.5px;line-height:1.65}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:16px}
+.summary-stat{border:1px solid var(--line-soft);padding:8px;background:rgba(255,255,255,.016)}
+.summary-stat strong{display:block;color:var(--signal-cyan);font-family:var(--display);font-size:22px;line-height:1}
+.summary-stat span{font-family:var(--data);font-size:7px;color:var(--dimmer);text-transform:uppercase;letter-spacing:.07em}
+
+.top-story{
+  position:relative;overflow:hidden;min-height:230px;padding:18px;
+  border:1px solid rgba(242,180,65,.52);
+  background:
+    linear-gradient(110deg,rgba(42,27,3,.9),rgba(6,24,34,.82) 58%),
+    repeating-linear-gradient(0deg,transparent 0 21px,rgba(242,180,65,.04) 22px);
+  box-shadow:inset 0 0 45px rgba(242,180,65,.035);
+}
+.top-story::after{
+  content:"";position:absolute;right:-5%;bottom:-20%;width:55%;height:85%;
+  background:linear-gradient(135deg,transparent 0 45%,rgba(242,180,65,.18) 46% 47%,transparent 48%);
+  opacity:.7;transform:skewX(-10deg);
+}
+.top-story-kicker{font-family:var(--data);font-size:9px;color:var(--pencil);letter-spacing:.12em;text-transform:uppercase}
+.top-story h2{
+  position:relative;z-index:1;font-family:var(--display);font-size:clamp(28px,3vw,45px);
+  line-height:1.02;margin:12px 0 10px;max-width:15ch;color:#ffd177;
+}
+.top-story p{position:relative;z-index:1;color:var(--print);font-size:14px;max-width:48ch}
+.top-story-meta{position:absolute;left:18px;right:18px;bottom:16px;display:flex;justify-content:space-between;align-items:end;z-index:2}
+.impact-chip{
+  border:1px solid rgba(242,180,65,.5);padding:5px 8px;color:var(--pencil);
+  font-family:var(--data);font-size:8px;letter-spacing:.1em;text-transform:uppercase;
+}
+.top-story-source{font-family:var(--data);font-size:8px;color:var(--dimmer)}
+
+/* Macro cards as intelligence modules */
+.macro-card .card-head::before{
+  content:"◈";color:var(--signal-cyan);font-family:var(--data);font-size:13px;
+}
+.macro-card .card-head .meta::before{content:"SIGNALS  ";color:var(--signal-green)}
+.firm-card .card-head::before{
+  content:"●";font-size:8px;color:var(--signal-green);text-shadow:0 0 10px rgba(66,229,138,.7);
+}
+.card:hover{transform:translateY(-2px)}
+.item{position:relative}
+.item::after{
+  content:"›";position:absolute;right:12px;top:14px;color:var(--line);font-family:var(--data);
+}
+.item:hover::after{color:var(--pencil)}
+
+/* Command palette */
+.command-hint{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:20;
+  width:min(620px,calc(100vw - 30px));height:31px;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  background:rgba(2,14,22,.94);border:1px solid var(--line);border-bottom:0;
+  border-radius:7px 7px 0 0;color:var(--dimmer);font-family:var(--data);font-size:8px;
+  box-shadow:0 -10px 30px rgba(0,0,0,.26);cursor:pointer;
+}
+.command-hint kbd{color:var(--print);border:1px solid var(--line);padding:2px 6px;border-radius:3px}
+.command-overlay{
+  position:fixed;inset:0;z-index:100;display:none;place-items:start center;
+  padding-top:min(18vh,150px);background:rgba(0,7,12,.72);backdrop-filter:blur(10px);
+}
+.command-overlay.open{display:grid}
+.command-box{
+  width:min(680px,calc(100vw - 28px));border:1px solid rgba(95,172,207,.6);
+  border-radius:8px;background:rgba(4,20,31,.98);box-shadow:0 35px 100px rgba(0,0,0,.7);overflow:hidden;
+}
+.command-input{
+  width:100%;height:56px;border:0;border-bottom:1px solid var(--line-soft);
+  background:transparent;color:var(--print);font-family:var(--data);font-size:15px;padding:0 18px;outline:none;
+}
+.command-results{max-height:330px;overflow:auto;padding:8px}
+.command-result{
+  width:100%;border:0;background:transparent;color:var(--dim);display:flex;justify-content:space-between;
+  padding:11px 12px;text-align:left;font-family:var(--data);font-size:10px;border-radius:4px;
+}
+.command-result:hover,.command-result.active{background:rgba(84,200,255,.08);color:var(--print)}
+.command-result span:last-child{color:var(--dimmer)}
+
+/* Responsive */
+@media(max-width:1180px){
+  .ops-bar{grid-template-columns:1.4fr repeat(2,1fr) auto}
+  .ops-cell:nth-child(4),.ops-cell:nth-child(5){display:none}
+}
+@media(max-width:760px){
+  .ops-bar{grid-template-columns:1fr 1fr}
+  .ops-cell{min-height:58px}
+  .ops-cell:nth-child(n+4){display:none}
+  .ops-actions{display:flex!important;grid-column:1/-1;border-left:0;border-top:1px solid var(--line-soft)}
+  .headline-tape{grid-template-columns:auto 1fr}
+  .tape-view{display:none}
+  .hero-command-grid{grid-template-columns:1fr}
+  .market-summary,.top-story{min-height:auto}
+  .top-story{padding-bottom:68px}
+}
+@media(max-width:520px){
+  .ops-brand{font-size:18px}
+  .ops-value{font-size:12px}
+  .summary-grid{grid-template-columns:repeat(3,1fr)}
+  .command-hint{display:none}
+}
+
 </style>
 
 <div id="cre-root">
   <div class="sheet">
+    <section class="ops-bar" aria-label="CRE operations status">
+      <div class="ops-cell">
+        <div class="ops-brand">CRE Operations Center</div>
+        <div class="ops-brand-sub">Real Estate Intelligence OS</div>
+      </div>
+      <div class="ops-cell">
+        <span class="ops-label">Date / Time</span>
+        <strong class="ops-value" id="opsClock">--:--:-- ET</strong>
+        <span class="ops-detail" id="opsDate">Loading date</span>
+      </div>
+      <div class="ops-cell">
+        <span class="ops-label">Market Status</span>
+        <strong class="ops-value ops-live"><span class="status-dot"></span>LIVE</strong>
+        <span class="ops-detail">All systems normal</span>
+      </div>
+      <div class="ops-cell">
+        <span class="ops-label">Intelligence Score</span>
+        <strong class="ops-score" id="opsScore">--</strong>
+        <span class="ops-detail" id="opsActivity">Awaiting signals</span>
+      </div>
+      <div class="ops-cell">
+        <span class="ops-label">Market Regime</span>
+        <strong class="ops-value ops-risk" id="opsRegime">ASSESSING</strong>
+        <span class="ops-detail" id="opsRegimeDetail">Reading market signals</span>
+      </div>
+      <div class="ops-actions">
+        <button class="ops-icon" id="commandOpen" title="Open command palette" aria-label="Open command palette">⌘</button>
+      </div>
+    </section>
+
+    <div class="headline-tape" aria-label="Live intelligence timeline">
+      <span class="tape-label">LIVE TIMELINE</span>
+      <div class="tape-track"><div class="tape-content" id="headlineTape">
+        <span class="tape-item"><span class="tape-time">--:--</span>Awaiting market intelligence</span>
+      </div></div>
+      <button class="tape-view" id="tapeView">VIEW ALL →</button>
+    </div>
+
     <div class="titleblock terminal-head">
       <div class="terminal-brand">
         <div class="terminal-kicker">CRE <span>//</span> MARKET INTELLIGENCE</div>
@@ -1169,6 +1508,17 @@ background-attachment:fixed;
       </aside>
 
       <main class="col" id="col"></main>
+    </div>
+  </div>
+
+  <button class="command-hint" id="commandHint" type="button">
+    <kbd>⌘ K</kbd><span>Search companies, markets, and topics</span>
+  </button>
+
+  <div class="command-overlay" id="commandOverlay" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="command-box">
+      <input class="command-input" id="commandInput" placeholder="Jump to a company, market, or macro section…" autocomplete="off">
+      <div class="command-results" id="commandResults"></div>
     </div>
   </div>
 </div>
@@ -1454,17 +1804,11 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
 
   function heroHTML(){
     const macroItems = (state.macro?.sections || []).flatMap(section =>
-      (section.items || []).map(item => ({
-        ...item,
-        group: section.title
-      }))
+      (section.items || []).map(item => ({...item, group: section.title}))
     );
 
     const firmItems = state.watchlist.flatMap(firm =>
-      (state.firms[firm]?.items || []).map(item => ({
-        ...item,
-        group: firm
-      }))
+      (state.firms[firm]?.items || []).map(item => ({...item, group: firm}))
     );
 
     const localItems = (state.local.items || []).map(item => ({
@@ -1473,44 +1817,63 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     }));
 
     const allItems = [...macroItems, ...firmItems, ...localItems];
-    const top = allItems.slice(0,3);
     const activeFirms = state.watchlist.filter(firm => state.firms[firm]?.items?.length).length;
-    const majorMoves = macroItems.length;
-    const marketName = state.local.market || state.local.override || "your market";
+    const topStory = allItems[0] || null;
+    const rates = normalizePulse(state.pulse);
+    const rateSignal = rates[0]?.value && rates[0].value !== "—"
+      ? `${rates[0].label} is ${rates[0].value}.`
+      : "Rates are awaiting a fresh market signal.";
+    const creditSignal = rates[2]?.value && rates[2].value !== "—"
+      ? `CMBS is quoted at ${rates[2].value}.`
+      : "Credit markets are being assessed.";
+    const strongestSection = (state.macro?.sections || [])
+      .slice()
+      .sort((a,b)=>(b.items?.length||0)-(a.items?.length||0))[0];
 
-    const lede = allItems.length
-      ? `The day’s highest-priority CRE intelligence across <em>macro, ${esc(marketName)}, and named firms</em>.`
-      : `Your daily hierarchy will surface <em>the most important market moves first</em> when the brief arrives.`;
+    const marketSummary = [
+      rateSignal,
+      creditSignal,
+      strongestSection?.title
+        ? `${strongestSection.title} is today’s most active macro channel.`
+        : "Macro intelligence is still loading."
+    ].join(" ");
 
-    const stories = top.length
-      ? top.map((item,index)=>`
-          <article class="hero-story">
-            <span class="hero-rank">${String(index+1).padStart(2,"0")}</span>
-            <div>
-              <h4>${esc(item.headline)}</h4>
-              <p>${esc(item.detail || item.why || "")}</p>
-            </div>
-            <span class="hero-source">${esc(item.group || "")}</span>
-          </article>
-        `).join("")
-      : `<div class="quiet">No stories have loaded yet. The scheduled brief will populate this priority view automatically.</div>`;
+    const impact = macroItems.length >= 8 ? "HIGH IMPACT" : macroItems.length >= 4 ? "ELEVATED" : "MONITOR";
+    const headline = topStory?.headline || "Today’s market intelligence is assembling";
+    const detail = topStory?.detail || "The system will surface the most consequential CRE signal as soon as the daily brief arrives.";
+    const source = topStory?.group || "CRE Intelligence";
 
     return `<section class="card hero-card" id="today-brief">
       <div class="card-head">
-        <h3>Today’s Brief</h3>
-        <span class="meta">Priority intelligence</span>
+        <h3>Today’s Briefing</h3>
+        <span class="meta">Decision intelligence</span>
       </div>
       <div class="hero-body">
-        <div class="hero-grid">
-          <div class="hero-lede">${lede}</div>
-          <div class="hero-stats">
-            <div class="hero-stat"><strong>${allItems.length}</strong><span>Total stories</span></div>
-            <div class="hero-stat"><strong>${majorMoves}</strong><span>Macro moves</span></div>
-            <div class="hero-stat"><strong>${activeFirms}</strong><span>Active firms</span></div>
-            <div class="hero-stat"><strong>${state.local.items?.length || 0}</strong><span>Local items</span></div>
-          </div>
+        <div class="hero-command-grid">
+          <section class="market-summary">
+            <div class="module-label">Market Summary</div>
+            <div class="regime-row">
+              <span class="regime-value">${macroItems.length >= 8 ? "RISK WATCH" : "SELECTIVE"}</span>
+              <span class="status-dot"></span>
+            </div>
+            <p class="summary-copy">${esc(marketSummary)}</p>
+            <div class="summary-grid">
+              <div class="summary-stat"><strong>${allItems.length}</strong><span>Total signals</span></div>
+              <div class="summary-stat"><strong>${macroItems.length}</strong><span>Macro moves</span></div>
+              <div class="summary-stat"><strong>${activeFirms}</strong><span>Active firms</span></div>
+            </div>
+          </section>
+
+          <section class="top-story">
+            <div class="top-story-kicker">Top Story</div>
+            <h2>${esc(headline)}</h2>
+            <p>${esc(detail)}</p>
+            <div class="top-story-meta">
+              <span class="impact-chip">${impact}</span>
+              <span class="top-story-source">${esc(source)}</span>
+            </div>
+          </section>
         </div>
-        <div class="hero-list">${stories}</div>
       </div>
     </section>`;
   }
@@ -1522,7 +1885,7 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     if(!state.macro && !Object.keys(state.firms).length){
       col.innerHTML = heroHTML() + `<div class="empty">
         <h3>Today’s brief is not ready yet</h3>
-        <p>The brief updates automatically at 8:00 AM ET each weekday.</p>
+        <p>The brief updates automatically at 8:00 AM ET each day.</p>
       </div>` + watchHTML();
 
       wireWatch();
@@ -1966,7 +2329,141 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
     }
 
     $("sub").textContent = dateLong;
+    updateOperationsUI();
   }
+
+  function getAllSignals(){
+    const macro = (state.macro?.sections || []).flatMap(s =>
+      (s.items || []).map(item => ({...item, group:s.title, target:"macro-" + slug(s.title)}))
+    );
+    const firms = state.watchlist.flatMap(firm =>
+      (state.firms[firm]?.items || []).map(item => ({...item, group:firm, target:"firm-" + slug(firm)}))
+    );
+    const local = (state.local.items || []).map(item => ({
+      ...item,
+      group:state.local.market || "Local market",
+      target:"local"
+    }));
+    return [...macro,...firms,...local];
+  }
+
+  function updateOperationsUI(){
+    const signals = getAllSignals();
+    const macroCount = (state.macro?.sections || []).reduce((n,s)=>n+(s.items?.length||0),0);
+    const activeFirms = state.watchlist.filter(f=>state.firms[f]?.items?.length).length;
+    const score = Math.min(99, Math.max(18, 42 + macroCount * 3 + activeFirms * 5 + Math.min(signals.length,15)));
+    const scoreEl = $("opsScore");
+    if(scoreEl) scoreEl.textContent = signals.length ? score : "--";
+    const activityEl = $("opsActivity");
+    if(activityEl) activityEl.textContent = signals.length
+      ? (score >= 80 ? "High activity" : score >= 60 ? "Elevated activity" : "Normal activity")
+      : "Awaiting signals";
+
+    const regime = $("opsRegime");
+    const regimeDetail = $("opsRegimeDetail");
+    const pulse = normalizePulse(state.pulse);
+    const ratesText = `${pulse[0]?.note||""} ${pulse[0]?.value||""}`.toLowerCase();
+    if(regime){
+      if(/▲|up|higher|rise|rising/.test(ratesText)){
+        regime.textContent = "RISK WATCH";
+        regime.className = "ops-value ops-risk";
+        if(regimeDetail) regimeDetail.textContent = "Rates pressure elevated";
+      } else {
+        regime.textContent = "SELECTIVE";
+        regime.className = "ops-value ops-tight";
+        if(regimeDetail) regimeDetail.textContent = "Opportunity remains targeted";
+      }
+    }
+
+    const tape = $("headlineTape");
+    if(tape){
+      const now = new Date();
+      const stories = signals.slice(0,8);
+      tape.innerHTML = stories.length
+        ? stories.map((item,index)=>{
+            const t = new Date(now.getTime() - index * 7 * 60000)
+              .toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+            return `<button class="tape-item" data-tape-target="${esc(item.target||"today-brief")}" type="button"><span class="tape-time">${esc(t)}</span>${esc(item.headline||item.group)}</button>`;
+          }).join("")
+        : `<span class="tape-item"><span class="tape-time">--:--</span>Awaiting market intelligence</span>`;
+
+      tape.querySelectorAll("[data-tape-target]").forEach(btn=>{
+        btn.onclick = ()=>document.getElementById(btn.dataset.tapeTarget)?.scrollIntoView({behavior:"smooth",block:"start"});
+      });
+    }
+
+    renderCommandResults("");
+  }
+
+  function updateClock(){
+    const now = new Date();
+    const clock = $("opsClock");
+    const date = $("opsDate");
+    if(clock) clock.textContent = now.toLocaleTimeString([],{
+      hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"America/New_York"
+    }) + " ET";
+    if(date) date.textContent = now.toLocaleDateString([],{
+      weekday:"short",month:"short",day:"numeric",year:"numeric",timeZone:"America/New_York"
+    });
+  }
+
+  function commandItems(){
+    const items = [
+      {label:"Today’s Briefing",type:"Dashboard",target:"today-brief"},
+      {label:"Local Operations",type:"Market",target:"local"},
+      ...MACRO_SECTIONS.map(s=>({label:s,type:"Macro",target:"macro-"+slug(s)})),
+      ...state.watchlist.map(f=>({label:f,type:"Watchlist",target:"firm-"+slug(f)}))
+    ];
+    return items;
+  }
+
+  function renderCommandResults(query){
+    const host = $("commandResults");
+    if(!host) return;
+    const q = String(query||"").trim().toLowerCase();
+    const items = commandItems().filter(item=>!q || `${item.label} ${item.type}`.toLowerCase().includes(q));
+    host.innerHTML = items.length
+      ? items.slice(0,12).map((item,index)=>`
+          <button class="command-result ${index===0?"active":""}" data-command-target="${esc(item.target)}" type="button">
+            <span>${esc(item.label)}</span><span>${esc(item.type)}</span>
+          </button>`).join("")
+      : `<div class="quiet">No matching command.</div>`;
+
+    host.querySelectorAll("[data-command-target]").forEach(btn=>{
+      btn.onclick = ()=>{
+        closeCommand();
+        document.getElementById(btn.dataset.commandTarget)?.scrollIntoView({behavior:"smooth",block:"start"});
+      };
+    });
+  }
+
+  function openCommand(){
+    const overlay = $("commandOverlay");
+    if(!overlay) return;
+    overlay.classList.add("open");
+    const input = $("commandInput");
+    if(input){input.value="";renderCommandResults("");setTimeout(()=>input.focus(),0);}
+  }
+
+  function closeCommand(){
+    $("commandOverlay")?.classList.remove("open");
+  }
+
+  $("commandOpen")?.addEventListener("click",openCommand);
+  $("commandHint")?.addEventListener("click",openCommand);
+  $("commandInput")?.addEventListener("input",e=>renderCommandResults(e.target.value));
+  $("commandOverlay")?.addEventListener("click",e=>{if(e.target.id==="commandOverlay") closeCommand();});
+  document.addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="k"){
+      e.preventDefault();
+      $("commandOverlay")?.classList.contains("open") ? closeCommand() : openCommand();
+    }
+    if(e.key==="Escape") closeCommand();
+  });
+  $("tapeView")?.addEventListener("click",()=>document.getElementById("today-brief")?.scrollIntoView({behavior:"smooth"}));
+  updateClock();
+  setInterval(updateClock,1000);
+
 
   /* ── pulling ─────────────────────────────── */
   async function pullFirm(firm){
