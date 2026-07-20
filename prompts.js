@@ -17,60 +17,46 @@ export const MACRO_SECTIONS = [
 ];
 
 export function macroPrompt() {
-  return `Today is ${dateLong()}. Search the web for the latest commercial real estate news and market data from the past 48 hours. Cover: Treasury yields and Fed policy, CRE debt/CMBS/lending conditions, transaction volume and cap rates, and sector news across office, industrial, data centers, multifamily and retail.
+  return `Today is ${dateLong()}.
 
-Brief a commercial real estate professional. Prioritize what moved and what is actionable. Use real, current figures from your search.
+Search the web for significant commercial real estate news published within the past 7 days.
 
-Return ONLY a valid JSON object, with no prose and no markdown:
+Cover these five categories:
+${MACRO_SECTIONS.map(section => `- ${section}`).join("\n")}
 
+Focus on:
+- CRE lending, debt, refinancing and CMBS activity
+- transaction markets, financing and capital flows
+- office leasing, distress and conversions
+- industrial and data center transactions or development
+- multifamily and retail transactions, financing or leasing
+
+Do not generate Treasury, SOFR, CMBS spread or cap-rate pulse figures. Those are supplied separately by direct market-data sources.
+
+Return ONLY one valid JSON object. Do not include an introduction, explanation, markdown or code fences.
+
+Use exactly this structure:
 {
-  "pulse": [
-    {
-      "value": "4.28%",
-      "note": "+6bps on the week"
-    },
-    {
-      "value": "4.33%",
-      "note": "flat"
-    },
-    {
-      "value": "AAA +82",
-      "note": "tightening"
-    },
-    {
-      "value": "Stable",
-      "note": "industrial 5.5-6.0%"
-    }
-  ],
   "sections": [
     {
       "title": "Rates & debt",
       "items": [
         {
           "headline": "Short factual headline",
-          "detail": "Maximum 25 words describing what happened, including figures",
-          "why": "Maximum 12 words explaining what it means for CRE",
+          "detail": "What happened, including relevant figures, in 35 words or fewer",
+          "why": "Why it matters for CRE in 15 words or fewer",
           "source": "Publication name",
-          "url": "https://..."
+          "url": "https://working-source-url"
         }
       ]
     }
   ]
 }
 
-Requirements:
+The sections array must contain exactly these five titles in this order:
+${MACRO_SECTIONS.map(section => `"${section}"`).join(", ")}
 
-- "pulse" must contain exactly 4 entries in this order:
-  1. 10Y Treasury
-  2. SOFR
-  3. CMBS spreads
-  4. Cap rate direction
-- "sections" must contain exactly these 5 titles in this order:
-  ${MACRO_SECTIONS.map(section => `"${section}"`).join(", ")}
-- Return no more than 2 items per section.
-- If a section has no real news, return an empty "items" array.
-- Only include real information supported by a working source URL.
-- Never invent a figure, story, source, or URL.`;
+Give up to 2 verified items per section. If no reliable news is available for a section, return an empty items array. Never invent facts, figures, sources or URLs. Always return the complete JSON structure, even when every items array is empty.`;
 }
 
 export function localPrompt(geo, market) {
