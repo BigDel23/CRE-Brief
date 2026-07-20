@@ -477,7 +477,38 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
 
     L.status = "pulling"; render();
     try{
-      const d = await ask(localPrompt());
+      const response = await fetch("/api/local-market", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(
+    L.override
+      ? {
+          market: L.override
+        }
+      : {
+          lat: L.geo.lat,
+          lng: L.geo.lng
+        }
+  )
+});
+
+if (!response.ok) {
+  let message = `Request failed (${response.status})`;
+
+  try {
+    const payload = await response.json();
+
+    if (payload.error) {
+      message = payload.error;
+    }
+  } catch (_) {}
+
+  throw new Error(message);
+}
+
+const d = await response.json();
       L.market = d.market || L.override || "Your market";
       L.submarket = d.submarket || "";
       L.items = Array.isArray(d.items) ? d.items : [];
