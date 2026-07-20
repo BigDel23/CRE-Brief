@@ -54,46 +54,82 @@ webpush.setVapidDetails(
 
 // ── model ─────────────────────────────────────────────────
 async function ask(prompt) {
-  const res = await fetch(
-    "https://api.anthropic.com/v1/messages",
+  const tools = [
     {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5",
-        max_tokens: 1500,
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        tools: [
-          {
-            type: "web_search_20250305",
-            name: "web_search",
-          },
-        ],
-      }),
-    }
-  );
+      type: "web_search_20250305",
+      name: "web_search",
+      max_uses: 6,
+    },
+  ];
 
-  if (!res.ok) {
-    throw new Error(
-      `Anthropic ${res.status}: ${await res.text()}`
+  const messages = [
+    {
+      role: "user",
+      content: prompt,
+    },
+  ];
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await fetch(
+      "https://api.anthropic.com/v1/messages",
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5",
+          max_tokens: 3000,
+          messages,
+          tools,
+        }),
+      }
     );
+
+    if (!res.ok) {
+      throw new Error(
+        `Anthropic ${res.status}: ${await res.text()}`
+      );
+    }
+
+    const data = await res.json();
+
+    console.log(
+      `[anthropic] attempt=${attempt} stop_reason=${data.stop_reason}`
+    );
+
+    const text = (data.content || [])
+      .filter(block => block.type === "text")
+      .map(block => block.text)
+      .join("\n")
+      .trim();
+
+    if (data.stop_reason === "pause_turn") {
+      messages.push({
+        role: "assistant",
+        content: data.content,
+      });
+      continue;
+    }
+
+    if (data.stop_reason === "max_tokens") {
+      throw new Error("Claude hit max_tokens.");
+    }
+
+    if (!text) {
+      throw new Error(
+        `No text returned. stop_reason=${data.stop_reason}`
+      );
+    }
+
+    return text;
   }
 
-  const data = await res.json();
-
-  return (data.content || [])
-    .filter(block => block.type === "text")
-    .map(block => block.text)
-    .join("\n");
+  throw new Error(
+    "Anthropic web search never completed."
+  );
 }
 
 function parseJSON(text) {
