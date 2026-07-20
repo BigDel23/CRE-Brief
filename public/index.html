@@ -549,15 +549,20 @@ a{color:inherit}
 
   /* ── model call ──────────────────────────── */
   async function ask(prompt){
-    const res = await fetch("/api/ask",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({prompt})
-    });
-    if(!res.ok) throw new Error("Request failed (" + res.status + ")");
-    const { text } = await res.json();
-    return parseJSON(text);
+  const res = await fetch("/api/local-market", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ prompt })
+  });
+
+  if (!res.ok) {
+    throw new Error("Request failed (" + res.status + ")");
   }
+
+  return await res.json();
+}
   function parseJSON(text){
     let t = text.replace(/```json/g,"").replace(/```/g,"").trim();
     const a = t.indexOf("{"), b = t.lastIndexOf("}");
