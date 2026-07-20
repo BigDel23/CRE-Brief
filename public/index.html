@@ -1468,21 +1468,39 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
         <div class="card-head">
           <h3>${esc(f)}</h3>
           <span class="meta">${r&&r.items?r.items.length+" item"+(r.items.length===1?"":"s"):""}</span>
-          <button class="drop" data-drop="${esc(f)}" title="Remove ${esc(f)}">remove</button>
+          <button class="drop" data-drop="${esc(f)}" title="Remove ${esc(f)}">✕</button>
         </div>${body}</section>`;
     }).join("");
 
     html += watchHTML();
     col.innerHTML = html;
 
-    col.querySelectorAll("[data-drop]").forEach(b=>{
-      b.onclick = async ()=>{
-        state.watchlist = state.watchlist.filter(f=>f!==b.dataset.drop);
-        delete state.firms[b.dataset.drop];
-        await save(KEY_WATCH,state.watchlist);
-        render();
-      };
-    });
+    col.querySelectorAll("[data-drop]").forEach(b => {
+  b.onclick = async () => {
+
+    if (state.watchlist.length === 1) {
+      alert("Keep at least one company in your watchlist.");
+      return;
+    }
+
+    if (!confirm(`Remove "${b.dataset.drop}" from your watchlist?`)) {
+      return;
+    }
+
+    state.watchlist = state.watchlist.filter(
+      f => f !== b.dataset.drop
+    );
+
+    delete state.firms[b.dataset.drop];
+
+    await save(KEY_WATCH, state.watchlist);
+
+    // Update the server so future briefs use the new watchlist
+    await window.syncSub?.();
+
+    render();
+  };
+});
 
     wireLocal();
     wireWatch();
