@@ -100,7 +100,10 @@ a{color:inherit}
 /* System status bar */
 .ops-bar{
   display:grid;
-  grid-template-columns:minmax(240px,1.25fr) repeat(4,minmax(130px,.72fr)) 58px;
+  grid-template-columns:
+    minmax(240px,1.25fr)
+    repeat(4,minmax(130px,.72fr))
+    96px;
   min-height:70px;
   border:1px solid rgba(74,142,174,.48);
   border-radius:var(--radius) var(--radius) 0 0;
