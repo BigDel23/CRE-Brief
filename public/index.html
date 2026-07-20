@@ -167,24 +167,31 @@ background-attachment:fixed;
     from{background-position:0 0}
     to{background-position:16px 0}
   }
+  .floor-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 28px;
+    border-bottom:1px solid var(--line-soft);
+    min-width:0;
+  }
+  .floor-row:last-child{border-bottom:0}
+  .floor-row .floor{border-bottom:0;min-width:0}
   .rail-remove{
-    margin-left:auto;
-    border:none;
+    border:0;
+    border-left:1px solid var(--line-soft);
     background:transparent;
-    color:#7f93a5;
+    color:var(--dimmer);
+    font-family:var(--data);
+    font-size:11px;
     cursor:pointer;
-    font-size:12px;
     opacity:0;
-    transition:opacity .15s;
-}
-
-.floor:hover .rail-remove{
-    opacity:1;
-}
-
-.rail-remove:hover{
-    color:#ff6666;
-}
+    transition:opacity .15s ease,color .15s ease,background .15s ease;
+  }
+  .floor-row:hover .rail-remove,
+  .rail-remove:focus-visible{opacity:1}
+  .rail-remove:hover{
+    color:var(--redline);
+    background:rgba(224,101,75,.08);
+  }
   .grade{
     border-top:1px solid var(--line);margin-top:2px;padding-top:5px;
     display:flex;justify-content:space-between;
@@ -315,6 +322,13 @@ background-attachment:fixed;
     .tower{flex-direction:row;overflow-x:auto;border-bottom-width:1px;border-right-width:3px}
     .floor{grid-template-columns:1fr;border-bottom:0;border-right:1px solid var(--line-soft);flex:none}
     .floor-num{display:none}
+    .floor-row{
+      grid-template-columns:auto 28px;
+      flex:none;
+      border-bottom:0;
+      border-right:1px solid var(--line-soft);
+    }
+    .rail-remove{opacity:1}
     .legend{flex-direction:row;gap:14px;flex-wrap:wrap}
     .grade{display:none}
     .fund{grid-template-columns:1fr 1fr}
@@ -1315,90 +1329,114 @@ Up to 3 items, newest first. "tag" must be one of: deal, capital, leasing, earni
   /* ── rail ────────────────────────────────── */
   function renderRail(){
     const floors = [];
-    state.watchlist.forEach(f=>{
+
+    state.watchlist.forEach(f => {
       const rec = state.firms[f];
       floors.push({
-        label:f, target:"firm-"+slug(f),
-        cls: rec?.status==="pulling" ? "pulling" : (rec?.items?.length ? "leased" : "")
+        label: f,
+        target: "firm-" + slug(f),
+        type: "firm",
+        cls: rec?.status === "pulling"
+          ? "pulling"
+          : (rec?.items?.length ? "leased" : "")
       });
     });
+
     floors.reverse();
-    MACRO_SECTIONS.slice().reverse().forEach(s=>{
-      const has = state.macro?.sections?.find(x=>x.title===s)?.items?.length;
-      floors.push({ label:s, target:"macro-"+slug(s), cls:"podium" + (has?" leased":"") });
+
+    MACRO_SECTIONS.slice().reverse().forEach(s => {
+      const has = state.macro?.sections?.find(x => x.title === s)?.items?.length;
+      floors.push({
+        label: s,
+        target: "macro-" + slug(s),
+        type: "macro",
+        cls: "podium" + (has ? " leased" : "")
+      });
     });
 
     const n = floors.length;
-    let html = floors.map((f,i)=>`
-      <button class="floor ${f.cls}" data-t="${f.target}">
-    <span class="floor-num">${n-i}</span>
 
-    <span class="floor-band">
-        ${esc(f.label)}
-    </span>
+    let html = floors.map((f, i) => `
+      <div class="floor-row">
+        <button
+          type="button"
+          class="floor ${f.cls}"
+          data-t="${f.target}"
+          title="${esc(f.label)}"
+        >
+          <span class="floor-num">${n - i}</span>
+          <span class="floor-band">${esc(f.label)}</span>
+        </button>
+        ${f.type === "firm" ? `
+          <button
+            type="button"
+            class="rail-remove"
+            data-rail-drop="${esc(f.label)}"
+            title="Remove ${esc(f.label)}"
+            aria-label="Remove ${esc(f.label)}"
+          >✕</button>` : ""}
+      </div>`).join("");
 
-    ${
-      f.target.startsWith("firm-")
-        ? `<button
-             class="rail-remove"
-             data-drop="${esc(f.label)}"
-             title="Remove ${esc(f.label)}"
-           >✕</button>`
-        : ""
-    }
-
-</button>`).join("");
-
-    // Below grade: your local market is the ground everything else sits on.
     const L = state.local;
-    const siteLabel = L.market ? L.market : "Site — locate me";
-    const siteCls = "site" + (L.items.length ? " leased" : "")
-                  + (["locating","pulling"].includes(L.status) ? " pulling" : "");
-    html += `<div class="grade-line"></div>
-      <button class="floor ${siteCls}" data-t="local" title="${esc(siteLabel)}">
-        <span class="floor-num">G</span>
-        <span class="floor-band">${esc(siteLabel)}</span>
-      </button>`;
+    const siteLabel = L.market || "Site — locate me";
+    const siteCls = "site"
+      + (L.items.length ? " leased" : "")
+      + (["locating", "pulling"].includes(L.status) ? " pulling" : "");
 
-    $("tower").innerHTML = html;
+    html += `
+      <div class="grade-line"></div>
+      <div class="floor-row">
+        <button
+          type="button"
+          class="floor ${siteCls}"
+          data-t="local"
+          title="${esc(siteLabel)}"
+        >
+          <span class="floor-num">G</span>
+          <span class="floor-band">${esc(siteLabel)}</span>
+        </button>
+      </div>`;
 
-    const active = floors.filter(f=>f.cls.includes("leased")).length + (L.items.length?1:0);
-    $("railcount").textContent = active + "/" + (n+1) + " active";
+    const tower = $("tower");
+    tower.innerHTML = html;
 
-    $("tower").querySelectorAll(".floor").forEach(b=>{
-      b.onclick = ()=> document.getElementById(b.dataset.t)?.scrollIntoView({behavior:"smooth",block:"start"});
+    const active = floors.filter(f => f.cls.includes("leased")).length
+      + (L.items.length ? 1 : 0);
+    $("railcount").textContent = active + "/" + (n + 1) + " active";
+
+    tower.querySelectorAll(".floor").forEach(button => {
+      button.onclick = () => {
+        document.getElementById(button.dataset.t)?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      };
     });
-  }
-rail.querySelectorAll(".rail-remove").forEach(btn => {
 
-    btn.onclick = async (e) => {
+    tower.querySelectorAll("[data-rail-drop]").forEach(button => {
+      button.onclick = async event => {
+        event.preventDefault();
+        event.stopPropagation();
 
-        e.stopPropagation();
+        const firm = button.dataset.railDrop;
 
         if (state.watchlist.length === 1) {
-            alert("Keep at least one company.");
-            return;
+          alert("Keep at least one company in your watchlist.");
+          return;
         }
 
-        if (!confirm(`Remove "${btn.dataset.drop}"?`)) {
-            return;
-        }
+        if (!confirm(`Remove "${firm}" from your watchlist?`)) return;
 
-        state.watchlist =
-            state.watchlist.filter(
-                f => f !== btn.dataset.drop
-            );
-
-        delete state.firms[btn.dataset.drop];
+        state.watchlist = state.watchlist.filter(name => name !== firm);
+        delete state.firms[firm];
 
         await save(KEY_WATCH, state.watchlist);
-
         await window.syncSub?.();
-
         render();
-    };
+      };
+    });
+  }
 
-});
   /* ── item rendering ──────────────────────── */
   function itemHTML(it, showTag){
     const src = it.url
