@@ -1289,6 +1289,150 @@ body{
   }
 }
 
+/* ─────────────────────────────────────────────
+   MANHATTAN AERIAL — VERY SLOW CINEMATIC PAN
+───────────────────────────────────────────── */
+
+#cre-root{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2,10,16,.95),
+      rgba(2,10,16,.985)
+    );
+}
+
+/*
+ * The image sits behind the full interface and moves independently
+ * of page scrolling. The oversized canvas prevents exposed edges.
+ */
+#cre-root::after{
+  content:"";
+  position:fixed;
+  z-index:0;
+  inset:-16% -10%;
+  pointer-events:none;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2,10,16,.56) 0%,
+      rgba(2,10,16,.74) 44%,
+      rgba(2,10,16,.92) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(2,10,16,.34),
+      rgba(2,10,16,.10) 48%,
+      rgba(2,10,16,.42)
+    ),
+    url("https://images.unsplash.com/photo-1529974019031-b0cd38fd54fc?auto=format&fit=crop&fm=jpg&q=82&w=2600")
+      center 24% / cover no-repeat;
+
+  transform:
+    translate3d(-1.8%, -1.5%, 0)
+    scale(1.12);
+
+  transform-origin:center;
+  filter:
+    saturate(.82)
+    brightness(.72)
+    contrast(1.06);
+
+  animation:
+    manhattanAerialPan 150s
+    cubic-bezier(.42,0,.58,1)
+    infinite alternate;
+
+  will-change:transform;
+  backface-visibility:hidden;
+}
+
+/*
+ * A single extremely slow move avoids the artificial "Ken Burns"
+ * feel. It reads more like a locked aerial camera drifting over
+ * Manhattan.
+ */
+@keyframes manhattanAerialPan{
+  0%{
+    transform:
+      translate3d(-2.4%, -2.5%, 0)
+      scale(1.13);
+  }
+
+  50%{
+    transform:
+      translate3d(1.2%, -7%, 0)
+      scale(1.16);
+  }
+
+  100%{
+    transform:
+      translate3d(2.8%, -12%, 0)
+      scale(1.19);
+  }
+}
+
+/* Keep the technical grid quiet above the city image. */
+#cre-root::before{
+  z-index:1;
+  opacity:.34;
+}
+
+.sheet,
+.site-footer{
+  position:relative;
+  z-index:2;
+}
+
+/*
+ * iOS / phone mode:
+ * use the same Manhattan image and a much lighter animation path.
+ * This preserves smooth scrolling and battery life.
+ */
+@media(max-width:860px){
+  #cre-root::after{
+    inset:-10% -28%;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(2,10,16,.58),
+        rgba(2,10,16,.92)
+      ),
+      url("https://images.unsplash.com/photo-1529974019031-b0cd38fd54fc?auto=format&fit=crop&fm=jpg&q=78&w=1800")
+        center 18% / cover no-repeat;
+
+    filter:
+      saturate(.78)
+      brightness(.68)
+      contrast(1.04);
+
+    animation-duration:190s;
+  }
+
+  @keyframes manhattanAerialPan{
+    0%{
+      transform:
+        translate3d(-1.5%, -1%, 0)
+        scale(1.10);
+    }
+
+    100%{
+      transform:
+        translate3d(1.5%, -7%, 0)
+        scale(1.14);
+    }
+  }
+}
+
+/* Stop all background motion for users who request less motion. */
+@media(prefers-reduced-motion:reduce){
+  #cre-root::after{
+    animation:none !important;
+    transform:scale(1.10) !important;
+  }
+}
+
 </style>
 </head>
 <body>
