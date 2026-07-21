@@ -727,9 +727,572 @@ a{color:inherit}
   content: none !important;
   display: none !important;
 }
+
+/* ─────────────────────────────────────────────
+   PRODUCTION POLISH
+   Editorial motion, calmer surfaces, and legal footer
+───────────────────────────────────────────── */
+
+:root{
+  --surface-1:rgba(5,24,35,.96);
+  --surface-2:rgba(8,34,48,.94);
+  --surface-3:rgba(12,45,62,.92);
+  --edge:rgba(74,142,174,.42);
+  --edge-strong:rgba(89,201,245,.56);
+  --motion-ease:cubic-bezier(.22,.61,.36,1);
+  --shadow:0 18px 48px rgba(0,0,0,.34),0 4px 14px rgba(0,0,0,.18);
+}
+
+html{
+  scrollbar-color:var(--line-bright) var(--bg);
+}
+
+body{
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+#cre-root{
+  --page-shift:0px;
+  background-position:center calc(50% + var(--page-shift));
+}
+
+.sheet{
+  isolation:isolate;
+}
+
+.scroll-progress{
+  position:fixed;
+  z-index:200;
+  top:0;
+  left:0;
+  width:100%;
+  height:2px;
+  pointer-events:none;
+  background:linear-gradient(90deg,var(--amber),#ffd47d 55%,var(--cyan));
+  transform:scaleX(var(--scroll-progress,0));
+  transform-origin:left center;
+  box-shadow:0 0 12px rgba(243,182,66,.34);
+}
+
+.ops-bar,
+.titleblock,
+.card,
+.empty,
+.add-panel,
+.rail{
+  border-color:var(--edge);
+  box-shadow:var(--shadow);
+}
+
+.ops-bar{
+  position:relative;
+  background:
+    linear-gradient(180deg,rgba(4,20,30,.985),rgba(3,15,23,.985));
+}
+
+.ops-bar::after{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  height:1px;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(89,201,245,.42),transparent);
+}
+
+.ops-cell{
+  transition:background-color .22s ease;
+}
+
+.headline-tape{
+  box-shadow:0 10px 26px rgba(0,0,0,.16);
+}
+
+.titleblock{
+  background:
+    linear-gradient(135deg,rgba(10,40,56,.97),rgba(4,20,30,.98));
+}
+
+.card,
+.empty,
+.add-panel{
+  background:
+    linear-gradient(145deg,var(--surface-2),var(--surface-1));
+}
+
+.card{
+  box-shadow:0 14px 36px rgba(0,0,0,.28);
+  transition:
+    transform .26s var(--motion-ease),
+    border-color .26s ease,
+    box-shadow .26s ease,
+    background-color .26s ease;
+}
+
+.card::before{
+  width:1px;
+  opacity:.34;
+}
+
+.card::after{
+  content:"";
+  position:absolute;
+  inset:0 14px auto;
+  height:1px;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+}
+
+.card-head{
+  background:
+    linear-gradient(180deg,rgba(19,61,82,.92),rgba(11,42,58,.92));
+}
+
+.top-story-panel{
+  border-color:rgba(243,182,66,.46);
+  background:
+    radial-gradient(circle at 88% 12%,rgba(243,182,66,.08),transparent 26%),
+    linear-gradient(120deg,rgba(34,25,8,.92),rgba(5,23,33,.94) 64%);
+}
+
+.top-story-panel h2{
+  max-width:20ch;
+  hyphens:none;
+  overflow-wrap:normal;
+  word-break:normal;
+  text-wrap:balance;
+}
+
+.top-story-panel p,
+.item p,
+.market-summary-copy{
+  text-wrap:pretty;
+}
+
+.item h4{
+  text-wrap:balance;
+}
+
+.sect-rule{
+  padding-top:12px;
+  margin-top:8px;
+}
+
+.rail{
+  background:rgba(3,20,30,.74);
+  box-shadow:0 16px 38px rgba(0,0,0,.24);
+}
+
+.market-line{
+  transition:
+    background-color .2s ease,
+    box-shadow .2s ease,
+    transform .2s var(--motion-ease);
+}
+
+.signal-item{
+  transition:
+    background-color .2s ease,
+    border-color .2s ease,
+    transform .2s var(--motion-ease);
+}
+
+.item{
+  transition:
+    background-color .18s ease,
+    padding-left .18s var(--motion-ease);
+}
+
+.site-footer{
+  margin:24px 0 18px;
+  border:1px solid var(--edge);
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:
+    linear-gradient(145deg,rgba(6,27,39,.95),rgba(3,16,24,.97));
+  box-shadow:0 14px 36px rgba(0,0,0,.24);
+}
+
+.site-footer__lead{
+  display:grid;
+  grid-template-columns:minmax(180px,.34fr) minmax(0,1fr);
+  gap:24px;
+  padding:18px 20px;
+  border-bottom:1px solid var(--line-soft);
+}
+
+.site-footer__brand{
+  font-family:var(--display);
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+.site-footer__brand span{
+  display:block;
+  margin-top:5px;
+  color:var(--faint);
+  font-family:var(--mono);
+  font-size:7.5px;
+  font-weight:400;
+  letter-spacing:.1em;
+}
+
+.site-footer__notice{
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.65;
+}
+
+.site-footer__notice strong{
+  color:var(--text);
+}
+
+.site-footer__details{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.site-footer details{
+  border-right:1px solid var(--line-soft);
+  border-bottom:1px solid var(--line-soft);
+}
+
+.site-footer details:nth-child(even){
+  border-right:0;
+}
+
+.site-footer summary{
+  position:relative;
+  cursor:pointer;
+  list-style:none;
+  padding:13px 38px 13px 20px;
+  color:var(--text);
+  font-family:var(--display);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+.site-footer summary::-webkit-details-marker{
+  display:none;
+}
+
+.site-footer summary::after{
+  content:"+";
+  position:absolute;
+  right:18px;
+  top:50%;
+  color:var(--amber);
+  font-family:var(--mono);
+  transform:translateY(-50%);
+}
+
+.site-footer details[open] summary::after{
+  content:"−";
+}
+
+.site-footer details p{
+  padding:0 20px 16px;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.65;
+}
+
+.site-footer__meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:12px 20px;
+  color:var(--faint);
+  font-family:var(--mono);
+  font-size:7.5px;
+  letter-spacing:.04em;
+}
+
+.site-footer__meta a{
+  color:var(--muted);
+  text-decoration:none;
+  border-bottom:1px dotted var(--line);
+}
+
+.site-footer__meta a:hover{
+  color:var(--amber);
+  border-color:var(--amber-soft);
+}
+
+/* Motion is enabled only after JavaScript confirms support. */
+.motion-ready .reveal-on-scroll{
+  opacity:0;
+  transform:translate3d(0,18px,0);
+  filter:blur(3px);
+  transition:
+    opacity .64s var(--motion-ease) var(--reveal-delay,0ms),
+    transform .64s var(--motion-ease) var(--reveal-delay,0ms),
+    filter .64s ease var(--reveal-delay,0ms);
+}
+
+.motion-ready .reveal-on-scroll.is-visible{
+  opacity:1;
+  transform:translate3d(0,0,0);
+  filter:blur(0);
+}
+
+.motion-ready .intro-rise{
+  animation:introRise .66s var(--motion-ease) both;
+}
+
+.motion-ready .headline-tape.intro-rise{
+  animation-delay:70ms;
+}
+
+.motion-ready .titleblock.intro-rise{
+  animation-delay:120ms;
+}
+
+@keyframes introRise{
+  from{
+    opacity:0;
+    transform:translate3d(0,12px,0);
+  }
+  to{
+    opacity:1;
+    transform:translate3d(0,0,0);
+  }
+}
+
+@media(hover:hover) and (pointer:fine){
+  .ops-cell:hover{
+    background:rgba(89,201,245,.025);
+  }
+
+  .card:hover{
+    transform:translateY(-3px);
+    border-color:var(--edge-strong);
+    box-shadow:0 20px 48px rgba(0,0,0,.34);
+  }
+
+  .market-line:hover,
+  .signal-item:hover{
+    transform:translateY(-1px);
+  }
+}
+
+@media(max-width:860px){
+  #cre-root{
+    --page-shift:0px !important;
+  }
+
+  .motion-ready .reveal-on-scroll{
+    transform:translate3d(0,10px,0);
+    filter:none;
+  }
+
+  .site-footer__lead{
+    grid-template-columns:1fr;
+    gap:9px;
+  }
+}
+
+@media(max-width:520px){
+  .top-story-panel h2{
+    max-width:none;
+    font-size:clamp(29px,9.5vw,39px);
+    line-height:1;
+  }
+
+  .site-footer{
+    margin:16px 0 8px;
+  }
+
+  .site-footer__lead{
+    padding:16px 14px;
+  }
+
+  .site-footer__details{
+    grid-template-columns:1fr;
+  }
+
+  .site-footer details,
+  .site-footer details:nth-child(even){
+    border-right:0;
+  }
+
+  .site-footer summary{
+    min-height:46px;
+    display:flex;
+    align-items:center;
+    padding:12px 38px 12px 14px;
+  }
+
+  .site-footer details p{
+    padding:0 14px 15px;
+  }
+
+  .site-footer__meta{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:6px;
+    padding:12px 14px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  #cre-root{
+    --page-shift:0px !important;
+  }
+
+  .scroll-progress{
+    display:none;
+  }
+
+  .motion-ready .reveal-on-scroll,
+  .motion-ready .reveal-on-scroll.is-visible,
+  .motion-ready .intro-rise{
+    opacity:1;
+    transform:none;
+    filter:none;
+    animation:none;
+    transition:none;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   SCROLL-DRIVEN BACKGROUND TRANSFORMATION
+   Slow architectural parallax + controlled color phases
+───────────────────────────────────────────── */
+
+#cre-root{
+  --atmo-x:0px;
+  --atmo-y:0px;
+  --atmo-scale:1.035;
+  --atmo-focus-x:50%;
+  --atmo-focus-y:4%;
+  --atmo-cyan:.18;
+  --atmo-amber:.015;
+  --atmo-violet:.01;
+  --atmo-veil-top:.76;
+  --atmo-veil-bottom:.92;
+  --atmo-saturation:.88;
+  --atmo-brightness:.92;
+  isolation:isolate;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2,10,16,.94),
+      rgba(2,10,16,.98)
+    );
+}
+
+/* Moving architectural image and light field */
+#cre-root::after{
+  content:"";
+  position:fixed;
+  z-index:0;
+  inset:-8%;
+  pointer-events:none;
+  background:
+    radial-gradient(
+      circle at
+      var(--atmo-focus-x)
+      var(--atmo-focus-y),
+      rgba(89,201,245,var(--atmo-cyan)),
+      transparent 29%
+    ),
+    radial-gradient(
+      circle at
+      calc(100% - var(--atmo-focus-x))
+      calc(22% + var(--atmo-focus-y)),
+      rgba(243,182,66,var(--atmo-amber)),
+      transparent 31%
+    ),
+    radial-gradient(
+      circle at
+      calc(18% + var(--atmo-focus-x))
+      92%,
+      rgba(166,126,210,var(--atmo-violet)),
+      transparent 34%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(2,10,16,var(--atmo-veil-top)),
+      rgba(2,10,16,var(--atmo-veil-bottom))
+    ),
+    url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2200&q=80")
+      center / cover no-repeat;
+  transform:
+    translate3d(
+      var(--atmo-x),
+      var(--atmo-y),
+      0
+    )
+    scale(var(--atmo-scale));
+  transform-origin:center;
+  filter:
+    saturate(var(--atmo-saturation))
+    brightness(var(--atmo-brightness))
+    contrast(1.04);
+  will-change:transform,filter;
+  backface-visibility:hidden;
+}
+
+/* Keep the existing grid above the moving image */
+#cre-root::before{
+  z-index:1;
+  opacity:
+    calc(
+      .42 +
+      (var(--scroll-progress,0) * .18)
+    );
+}
+
+.sheet{
+  z-index:2;
+}
+
+/* The background subtly changes the atmosphere of panels,
+   without changing their layout or readability. */
+.titleblock,
+.card,
+.rail,
+.site-footer{
+  transition:
+    border-color .35s ease,
+    box-shadow .35s ease;
+}
+
+/* iOS and smaller screens: keep the color transformation,
+   but avoid the heavier parallax/filter work. */
+@media(max-width:860px){
+  #cre-root::after{
+    inset:0;
+    transform:none;
+    filter:none;
+    background-position:center top;
+    will-change:auto;
+  }
+
+  #cre-root::before{
+    opacity:.46;
+  }
+}
+
+/* Respect accessibility preferences completely. */
+@media(prefers-reduced-motion:reduce){
+  #cre-root::after{
+    transform:none !important;
+    filter:none !important;
+    will-change:auto;
+  }
+}
+
 </style>
 </head>
 <body>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 <div id="cre-root">
   <div class="sheet">
     <section class="ops-bar" aria-label="CRE intelligence status">
@@ -808,6 +1371,55 @@ a{color:inherit}
       </aside>
       <main class="col" id="col"></main>
     </div>
+
+    <footer class="site-footer" aria-label="Disclosures and legal information">
+      <div class="site-footer__lead">
+        <div class="site-footer__brand">
+          CRE News Terminal
+          <span>AI-assisted commercial real estate intelligence</span>
+        </div>
+        <p class="site-footer__notice">
+          <strong>AI and accuracy notice.</strong>
+          Some headlines, summaries, classifications, and market interpretations are generated or assisted by artificial intelligence. They may be incomplete, inaccurate, or out of date. Verify material facts against the linked source and other primary sources before relying on them.
+        </p>
+      </div>
+
+      <div class="site-footer__details">
+        <details>
+          <summary>Informational use only</summary>
+          <p>
+            This service is provided for general informational purposes only. It is not investment, legal, tax, accounting, brokerage, appraisal, valuation, lending, or other professional advice; it is not an offer, solicitation, recommendation, or endorsement of any transaction, security, property, company, or strategy. Use independent judgment and consult qualified professionals before acting.
+          </p>
+        </details>
+
+        <details>
+          <summary>Data and privacy</summary>
+          <p>
+            When you request location-based results or notifications, the service may process the market you select, browser-provided location, watchlist preferences, push-subscription information, and technical request data to provide those features and protect the service. Location and notification access require browser permission and can be revoked in your device or browser settings. Do not submit confidential, sensitive, or personally identifying information in free-text fields.
+          </p>
+        </details>
+
+        <details>
+          <summary>Sources and third parties</summary>
+          <p>
+            News, market data, and outbound links may come from third parties and may be delayed, revised, unavailable, or subject to separate terms and privacy practices. CRE News Terminal does not control third-party content and is not affiliated with or endorsed by the companies, publications, or data providers referenced. Names and trademarks belong to their respective owners.
+          </p>
+        </details>
+
+        <details>
+          <summary>Availability and audience</summary>
+          <p>
+            The service is provided on an “as is” and “as available” basis without guarantees of completeness, accuracy, timeliness, uninterrupted access, or fitness for a particular purpose. It is intended for business and professional audiences and is not directed to children under 13.
+          </p>
+        </details>
+      </div>
+
+      <div class="site-footer__meta">
+        <span>© <span id="legalYear">2026</span> CRE News Terminal. All rights reserved.</span>
+        <a href="#cre-root">Back to top ↑</a>
+      </div>
+    </footer>
+
   </div>
 
   <button class="command-hint" id="commandHint" type="button">
@@ -2331,5 +2943,336 @@ if (supported) {
 });
 })();
 </script>
+
+<script>
+/* ── Editorial motion and scroll state ─────────────────── */
+(function(){
+  const root = document.documentElement;
+  const page = document.getElementById("cre-root");
+  const progress = document.getElementById("scrollProgress");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  root.classList.add("motion-ready");
+
+  document.querySelectorAll(
+    ".ops-bar, .headline-tape, .titleblock"
+  ).forEach(element => {
+    element.classList.add("intro-rise");
+  });
+
+  const revealSelector = [
+    ".hero-card",
+    ".local-card",
+    ".macro-card",
+    ".firm-card",
+    ".sect-rule",
+    ".add-panel",
+    ".empty",
+    ".site-footer"
+  ].join(",");
+
+  let revealObserver = null;
+
+  if (
+    "IntersectionObserver" in window &&
+    !reducedMotion.matches
+  ) {
+    revealObserver = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        }
+      },
+      {
+        threshold: 0.08,
+        rootMargin: "0px 0px -7% 0px"
+      }
+    );
+  }
+
+  function bindRevealElements(){
+    const elements =
+      document.querySelectorAll(revealSelector);
+
+    elements.forEach((element, index) => {
+      if (element.dataset.revealBound === "true") {
+        return;
+      }
+
+      element.dataset.revealBound = "true";
+      element.classList.add("reveal-on-scroll");
+      element.style.setProperty(
+        "--reveal-delay",
+        `${Math.min((index % 5) * 38, 152)}ms`
+      );
+
+      if (revealObserver) {
+        revealObserver.observe(element);
+      } else {
+        element.classList.add("is-visible");
+      }
+    });
+  }
+
+  const contentRoot =
+    document.getElementById("col");
+
+  if (contentRoot) {
+    const mutationObserver =
+      new MutationObserver(bindRevealElements);
+
+    mutationObserver.observe(
+      contentRoot,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+  }
+
+  bindRevealElements();
+
+  let scrollFrame = 0;
+
+  function updateScrollState(){
+    scrollFrame = 0;
+
+    const scrollTop =
+      window.scrollY ||
+      document.documentElement.scrollTop ||
+      0;
+
+    const scrollRange =
+      Math.max(
+        1,
+        document.documentElement.scrollHeight -
+        window.innerHeight
+      );
+
+    const ratio =
+      Math.min(
+        1,
+        Math.max(
+          0,
+          scrollTop / scrollRange
+        )
+      );
+
+    if (progress) {
+      progress.style.setProperty(
+        "--scroll-progress",
+        ratio.toFixed(4)
+      );
+    }
+
+    if (page) {
+      /*
+       * Scroll-driven background phases:
+       * top    = cool, restrained
+       * middle = warmer editorial emphasis
+       * bottom = deeper blue/violet finish
+       */
+      const eased =
+        ratio * ratio *
+        (3 - 2 * ratio);
+
+      const middleWave =
+        Math.sin(
+          ratio * Math.PI
+        );
+
+      const latePhase =
+        Math.max(
+          0,
+          (ratio - .46) / .54
+        );
+
+      const focusX =
+        50 +
+        Math.sin(
+          ratio *
+          Math.PI *
+          1.18
+        ) * 27;
+
+      const focusY =
+        4 +
+        eased * 72;
+
+      const cyan =
+        .18 -
+        middleWave * .075 +
+        latePhase * .045;
+
+      const amber =
+        .015 +
+        middleWave * .105;
+
+      const violet =
+        .01 +
+        latePhase * .085;
+
+      const veilTop =
+        .76 +
+        eased * .08;
+
+      const veilBottom =
+        .92 +
+        eased * .045;
+
+      page.style.setProperty(
+        "--scroll-progress",
+        ratio.toFixed(4)
+      );
+
+      page.style.setProperty(
+        "--atmo-focus-x",
+        `${focusX.toFixed(2)}%`
+      );
+
+      page.style.setProperty(
+        "--atmo-focus-y",
+        `${focusY.toFixed(2)}%`
+      );
+
+      page.style.setProperty(
+        "--atmo-cyan",
+        cyan.toFixed(4)
+      );
+
+      page.style.setProperty(
+        "--atmo-amber",
+        amber.toFixed(4)
+      );
+
+      page.style.setProperty(
+        "--atmo-violet",
+        violet.toFixed(4)
+      );
+
+      page.style.setProperty(
+        "--atmo-veil-top",
+        veilTop.toFixed(4)
+      );
+
+      page.style.setProperty(
+        "--atmo-veil-bottom",
+        veilBottom.toFixed(4)
+      );
+
+      if (
+        window.innerWidth > 860 &&
+        !reducedMotion.matches
+      ) {
+        const xShift =
+          Math.sin(
+            ratio *
+            Math.PI *
+            1.35
+          ) * 22;
+
+        const yShift =
+          -8 -
+          eased * 46;
+
+        const scale =
+          1.035 +
+          eased * .075;
+
+        const saturation =
+          .88 +
+          middleWave * .12;
+
+        const brightness =
+          .92 -
+          eased * .055;
+
+        page.style.setProperty(
+          "--atmo-x",
+          `${xShift.toFixed(2)}px`
+        );
+
+        page.style.setProperty(
+          "--atmo-y",
+          `${yShift.toFixed(2)}px`
+        );
+
+        page.style.setProperty(
+          "--atmo-scale",
+          scale.toFixed(4)
+        );
+
+        page.style.setProperty(
+          "--atmo-saturation",
+          saturation.toFixed(4)
+        );
+
+        page.style.setProperty(
+          "--atmo-brightness",
+          brightness.toFixed(4)
+        );
+      } else {
+        page.style.setProperty(
+          "--atmo-x",
+          "0px"
+        );
+
+        page.style.setProperty(
+          "--atmo-y",
+          "0px"
+        );
+
+        page.style.setProperty(
+          "--atmo-scale",
+          "1"
+        );
+      }
+    }
+  }
+
+  function requestScrollState(){
+    if (scrollFrame) return;
+
+    scrollFrame =
+      requestAnimationFrame(
+        updateScrollState
+      );
+  }
+
+  window.addEventListener(
+    "scroll",
+    requestScrollState,
+    { passive: true }
+  );
+
+  window.addEventListener(
+    "resize",
+    requestScrollState,
+    { passive: true }
+  );
+
+  reducedMotion.addEventListener?.(
+    "change",
+    () => {
+      bindRevealElements();
+      updateScrollState();
+    }
+  );
+
+  const year =
+    document.getElementById("legalYear");
+
+  if (year) {
+    year.textContent =
+      String(new Date().getFullYear());
+  }
+
+  updateScrollState();
+})();
+</script>
+
 </body>
 </html>
