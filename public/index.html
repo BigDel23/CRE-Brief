@@ -1433,6 +1433,99 @@ body{
   }
 }
 
+/* ─────────────────────────────────────────────
+   MANHATTAN — BUILDING-HEIGHT PERSPECTIVE
+   Closer crop, less sky, slower lateral drift
+───────────────────────────────────────────── */
+
+#cre-root::after{
+  inset:-12% -18%;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2,10,16,.44) 0%,
+      rgba(2,10,16,.62) 46%,
+      rgba(2,10,16,.84) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(2,10,16,.28),
+      rgba(2,10,16,.08) 48%,
+      rgba(2,10,16,.32)
+    ),
+    url("https://images.unsplash.com/photo-1529974019031-b0cd38fd54fc?auto=format&fit=crop&fm=jpg&q=84&w=2800")
+      center 64% / cover no-repeat;
+
+  transform:
+    translate3d(-2.5%, -1%, 0)
+    scale(1.28);
+
+  filter:
+    saturate(.86)
+    brightness(.76)
+    contrast(1.07);
+
+  animation:
+    manhattanBuildingHeightPan 165s
+    cubic-bezier(.42,0,.58,1)
+    infinite alternate;
+}
+
+@keyframes manhattanBuildingHeightPan{
+  0%{
+    transform:
+      translate3d(-3.2%, -1.2%, 0)
+      scale(1.27);
+  }
+
+  50%{
+    transform:
+      translate3d(.5%, -2.6%, 0)
+      scale(1.30);
+  }
+
+  100%{
+    transform:
+      translate3d(3.6%, -4%, 0)
+      scale(1.33);
+  }
+}
+
+/* Keep the city close on phones without expensive movement. */
+@media(max-width:860px){
+  #cre-root::after{
+    inset:-8% -34%;
+    background-position:center 60%;
+    animation-duration:205s;
+    filter:
+      saturate(.82)
+      brightness(.72)
+      contrast(1.05);
+  }
+
+  @keyframes manhattanBuildingHeightPan{
+    0%{
+      transform:
+        translate3d(-1.8%, -.8%, 0)
+        scale(1.20);
+    }
+
+    100%{
+      transform:
+        translate3d(1.8%, -3.5%, 0)
+        scale(1.24);
+    }
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  #cre-root::after{
+    animation:none !important;
+    transform:scale(1.26) !important;
+  }
+}
+
 </style>
 </head>
 <body>
