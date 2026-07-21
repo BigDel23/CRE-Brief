@@ -162,7 +162,7 @@ a{color:inherit}
   transform:translateY(-1px);
 }
 .admin-refresh:disabled{
-  opacity:.55;
+  opacity:.72;
   cursor:wait;
   transform:none;
 }
@@ -1318,11 +1318,11 @@ body{
       180deg,
       rgba(2,10,16,.56) 0%,
       rgba(2,10,16,.74) 44%,
-      rgba(2,10,16,.92) 100%
+      rgba(2,10,16,.72) 100%
     ),
     linear-gradient(
       90deg,
-      rgba(2,10,16,.34),
+      rgba(2,10,16,.16),
       rgba(2,10,16,.10) 48%,
       rgba(2,10,16,.42)
     ),
@@ -1396,15 +1396,15 @@ body{
     background:
       linear-gradient(
         180deg,
-        rgba(2,10,16,.58),
-        rgba(2,10,16,.92)
+        rgba(2,10,16,.30),
+        rgba(2,10,16,.72)
       ),
       url("https://images.unsplash.com/photo-1529974019031-b0cd38fd54fc?auto=format&fit=crop&fm=jpg&q=78&w=1800")
         center 18% / cover no-repeat;
 
     filter:
       saturate(.78)
-      brightness(.68)
+      brightness(.82)
       contrast(1.04);
 
     animation-duration:95s;
@@ -1476,13 +1476,13 @@ body{
     scale(1.13);
   transform-origin:center;
   filter:
-    saturate(.84)
-    brightness(.70)
+    saturate(.98)
+    brightness(.88)
     contrast(1.06);
   transition:
-    opacity 3.2s ease-in-out;
+    opacity 1.15s ease-in-out;
   animation:
-    cityPanDrift 37.5s
+    cityPanDrift 28s
     cubic-bezier(.44,0,.56,1)
     infinite alternate;
   will-change:transform, opacity;
@@ -1505,7 +1505,7 @@ body{
       transparent 24%
     );
   mix-blend-mode:screen;
-  opacity:.55;
+  opacity:.72;
 }
 
 .city-panorama::after{
@@ -1515,15 +1515,15 @@ body{
   background:
     linear-gradient(
       180deg,
-      rgba(2,10,16,.52) 0%,
-      rgba(2,10,16,.70) 42%,
-      rgba(2,10,16,.90) 100%
+      rgba(2,10,16,.24) 0%,
+      rgba(2,10,16,.42) 42%,
+      rgba(2,10,16,.68) 100%
     ),
     linear-gradient(
       90deg,
-      rgba(2,10,16,.34),
-      rgba(2,10,16,.12) 48%,
-      rgba(2,10,16,.38)
+      rgba(2,10,16,.16),
+      rgba(2,10,16,.04) 48%,
+      rgba(2,10,16,.18)
     );
 }
 
@@ -1553,7 +1553,7 @@ body{
 
 #cre-root::before{
   z-index:1;
-  opacity:.33;
+  opacity:.22;
 }
 
 .sheet,
@@ -1567,10 +1567,10 @@ body{
   .city-panorama{
     inset:-10% -24%;
     filter:
-      saturate(.80)
-      brightness(.68)
+      saturate(.92)
+      brightness(.82)
       contrast(1.04);
-    animation-duration:47.5s;
+    animation-duration:36s;
   }
 
   @keyframes cityPanDrift{
@@ -3641,8 +3641,8 @@ if (supported) {
 
   const holdMs =
     window.innerWidth <= 860
-      ? 24000
-      : 19000;
+      ? 12500
+      : 10000;
 
   function paintLayer(layer, city){
     layer.style.backgroundImage =
