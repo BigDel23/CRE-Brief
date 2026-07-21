@@ -1433,10 +1433,185 @@ body{
   }
 }
 
+/* ─────────────────────────────────────────────
+   GLOBAL CITY LOOP — NIGHT AERIALS
+   Manhattan → Chongqing → Tokyo → London
+   Seamless cross-fade loop with matched motion pacing
+───────────────────────────────────────────── */
+
+/* Disable the old single-image pseudo background. */
+#cre-root::after{
+  content:none !important;
+  display:none !important;
+}
+
+#cre-root{
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2,10,16,.95),
+      rgba(2,10,16,.985)
+    );
+}
+
+.city-rotator{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  background:#020a10;
+}
+
+.city-panorama{
+  position:absolute;
+  inset:-14% -10%;
+  opacity:0;
+  background-color:#04111a;
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:center center;
+  transform:
+    translate3d(-2.2%, -2.5%, 0)
+    scale(1.13);
+  transform-origin:center;
+  filter:
+    saturate(.84)
+    brightness(.70)
+    contrast(1.06);
+  transition:
+    opacity 3.2s ease-in-out;
+  animation:
+    cityPanDrift 37.5s
+    cubic-bezier(.44,0,.56,1)
+    infinite alternate;
+  will-change:transform, opacity;
+  backface-visibility:hidden;
+}
+
+.city-panorama::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(
+      circle at 60% 18%,
+      rgba(88,195,241,.12),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 18% 76%,
+      rgba(245,177,58,.08),
+      transparent 24%
+    );
+  mix-blend-mode:screen;
+  opacity:.55;
+}
+
+.city-panorama::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(2,10,16,.52) 0%,
+      rgba(2,10,16,.70) 42%,
+      rgba(2,10,16,.90) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(2,10,16,.34),
+      rgba(2,10,16,.12) 48%,
+      rgba(2,10,16,.38)
+    );
+}
+
+.city-panorama.is-active{
+  opacity:1;
+}
+
+@keyframes cityPanDrift{
+  0%{
+    transform:
+      translate3d(-2.4%, -2.5%, 0)
+      scale(1.13);
+  }
+
+  50%{
+    transform:
+      translate3d(.9%, -7.4%, 0)
+      scale(1.16);
+  }
+
+  100%{
+    transform:
+      translate3d(3%, -12.5%, 0)
+      scale(1.19);
+  }
+}
+
+#cre-root::before{
+  z-index:1;
+  opacity:.33;
+}
+
+.sheet,
+.site-footer{
+  position:relative;
+  z-index:2;
+}
+
+/* Phone/iOS friendly: same city loop, lighter motion path. */
+@media(max-width:860px){
+  .city-panorama{
+    inset:-10% -24%;
+    filter:
+      saturate(.80)
+      brightness(.68)
+      contrast(1.04);
+    animation-duration:47.5s;
+  }
+
+  @keyframes cityPanDrift{
+    0%{
+      transform:
+        translate3d(-1.4%, -1.2%, 0)
+        scale(1.10);
+    }
+
+    50%{
+      transform:
+        translate3d(.8%, -4.6%, 0)
+        scale(1.12);
+    }
+
+    100%{
+      transform:
+        translate3d(1.8%, -7.8%, 0)
+        scale(1.14);
+    }
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .city-panorama{
+    animation:none !important;
+    transition:none !important;
+    transform:scale(1.10) !important;
+  }
+}
+
 </style>
 </head>
 <body>
 <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<div class="city-rotator" id="cityRotator" aria-hidden="true">
+  <div class="city-panorama city-panorama-a is-active"></div>
+  <div class="city-panorama city-panorama-b"></div>
+</div>
+
 <div id="cre-root">
   <div class="sheet">
     <section class="ops-bar" aria-label="CRE intelligence status">
@@ -3415,6 +3590,110 @@ if (supported) {
   }
 
   updateScrollState();
+})();
+</script>
+
+<script>
+/* ── Global night-city background loop ───────────────────── */
+(function(){
+  const layerA = document.querySelector(".city-panorama-a");
+  const layerB = document.querySelector(".city-panorama-b");
+
+  if(!layerA || !layerB) return;
+
+  /*
+   * External background assets.
+   * If you ever want to self-host later for reliability,
+   * keep the same structure and replace only the URLs.
+   */
+  const cities = [
+    {
+      name: "Manhattan",
+      url: "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=2600&q=82",
+      position: "center 32%"
+    },
+    {
+      name: "Chongqing",
+      url: "https://images.unsplash.com/photo-1577083552431-6e5fd75fcfb9?auto=format&fit=crop&w=2600&q=82",
+      position: "center 36%"
+    },
+    {
+      name: "Tokyo",
+      url: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=2600&q=82",
+      position: "center 30%"
+    },
+    {
+      name: "London",
+      url: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=2600&q=82",
+      position: "center 34%"
+    }
+  ];
+
+  const reduced =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    );
+
+  let activeIndex = 0;
+  let activeLayer = layerA;
+  let inactiveLayer = layerB;
+  let loopTimer = null;
+
+  const holdMs =
+    window.innerWidth <= 860
+      ? 24000
+      : 19000;
+
+  function paintLayer(layer, city){
+    layer.style.backgroundImage =
+      `url("${city.url}")`;
+
+    layer.style.backgroundPosition =
+      city.position;
+
+    layer.setAttribute(
+      "data-city",
+      city.name
+    );
+  }
+
+  function swapCities(){
+    activeIndex =
+      (activeIndex + 1) %
+      cities.length;
+
+    const nextCity =
+      cities[activeIndex];
+
+    paintLayer(
+      inactiveLayer,
+      nextCity
+    );
+
+    inactiveLayer.classList.add(
+      "is-active"
+    );
+    activeLayer.classList.remove(
+      "is-active"
+    );
+
+    const temp = activeLayer;
+    activeLayer = inactiveLayer;
+    inactiveLayer = temp;
+  }
+
+  paintLayer(layerA, cities[0]);
+  paintLayer(layerB, cities[1]);
+
+  layerA.classList.add("is-active");
+  layerB.classList.remove("is-active");
+
+  if(!reduced.matches){
+    loopTimer = window.setInterval(
+      swapCities,
+      holdMs
+    );
+  }
 })();
 </script>
 
